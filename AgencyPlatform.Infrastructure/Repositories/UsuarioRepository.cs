@@ -45,6 +45,11 @@ namespace AgencyPlatform.Infrastructure.Repositories
         {
             await _context.SaveChangesAsync();
         }
+
+        public Task<usuario> GetByIdAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
 

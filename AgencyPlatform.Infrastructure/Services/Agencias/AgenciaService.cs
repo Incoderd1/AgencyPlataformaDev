@@ -41,7 +41,6 @@ namespace AgencyPlatform.Infrastructure.Services.Agencias
             _mapper = mapper;
         }
 
-        // Métodos CRUD básicos
         public async Task<List<AgenciaDto>> GetAllAsync()
         {
             var entidades = await _agenciaRepository.GetAllAsync();

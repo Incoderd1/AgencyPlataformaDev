@@ -17,6 +17,12 @@ using AgencyPlatform.Application.MapperProfiles;
 using AgencyPlatform.Application.Interfaces.Services.Agencias;
 using AgencyPlatform.Infrastructure.Mappers;
 using AgencyPlatform.Infrastructure.Services.Agencias;
+using AgencyPlatform.Application.Interfaces.Services.Acompanantes;
+using AgencyPlatform.Infrastructure.Services.Acompanantes;
+using AgencyPlatform.Application.Interfaces.Services.Categoria;
+using AgencyPlatform.Infrastructure.Services.Categoria;
+using AgencyPlatform.Application.Interfaces.Repositories.Archivos;
+using AgencyPlatform.Application.DTOs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -89,9 +95,39 @@ builder.Services.AddScoped<IVerificacionRepository, VerificacionRepository>();
 builder.Services.AddScoped<IAnuncioDestacadoRepository, AnuncioDestacadoRepository>();
 builder.Services.AddScoped<IIntentoLoginRepository, IntentoLoginRepository>();
 
+builder.Services.AddScoped<IAcompananteService, AcompananteService>();
+builder.Services.AddScoped<IAcompananteRepository, AcompananteRepository>();
+
+// En Program.cs o Startup.cs
+builder.Services.AddScoped<IFotoRepository, FotoRepository>();
+builder.Services.AddScoped<IServicioRepository, ServicioRepository>();
+builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
+builder.Services.AddScoped<IVisitaRepository, VisitaRepository>();
+builder.Services.AddScoped<IContactoRepository, ContactoRepository>();
+
+builder.Services.AddScoped<IVisitaPerfilRepository, VisitaPerfilRepository>();
+builder.Services.AddScoped<IContactoRepository, ContactoRepository>();
+builder.Services.AddScoped<IFotoRepository, FotoRepository>();
+builder.Services.AddScoped<IServicioRepository, ServicioRepository>();
+
+// Servicios
+builder.Services.AddScoped<IArchivosService, ArchivosService>();
+
+builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+builder.Services.AddScoped<IArchivosService, ArchivosService>();
+
+// DTO para registro de contactos
+builder.Services.AddScoped<RegistrarContactoDto>();
+
+
 
 // Registrar servicios
 builder.Services.AddScoped<IAgenciaService, AgenciaService>();
+// Registrar repositorios
+builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
+
+// Registrar servicios
+builder.Services.AddScoped<ICategoriaService, CategoriaService>();
 
 // Agregar HttpContextAccessor para acceder al usuario actual
 builder.Services.AddHttpContextAccessor();

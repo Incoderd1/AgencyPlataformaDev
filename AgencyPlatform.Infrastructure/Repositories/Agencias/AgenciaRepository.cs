@@ -32,6 +32,11 @@ namespace AgencyPlatform.Infrastructure.Repositories
                 .Include(a => a.acompanantes)
                 .FirstOrDefaultAsync(a => a.id == id);
         }
+        public async Task<agencia?> GetAgenciaByUsuarioIdAsync(int usuarioId)
+        {
+            return await _context.agencias
+                .FirstOrDefaultAsync(a => a.usuario_id == usuarioId);
+        }
 
         public async Task<agencia?> GetByUsuarioIdAsync(int usuarioId)
         {

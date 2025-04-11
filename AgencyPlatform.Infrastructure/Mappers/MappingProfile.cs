@@ -103,13 +103,13 @@ namespace AgencyPlatform.Infrastructure.Mappers
                     .ForMember(dest => dest.Precio, opt => opt.MapFrom(src => src.precio))
                     .ForMember(dest => dest.DuracionMinutos, opt => opt.MapFrom(src => src.duracion_minutos));
 
-                CreateMap<categoria, CategoriaDto>()
-                    .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.id))
-                    .ForMember(dest => dest.Nombre, opt => opt.MapFrom(src => src.nombre))
-                    .ForMember(dest => dest.Descripcion, opt => opt.MapFrom(src => src.descripcion));
+            CreateMap<categoria, AgencyPlatform.Application.DTOs.Categoria.CategoriaDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.id))
+                .ForMember(dest => dest.Nombre, opt => opt.MapFrom(src => src.nombre))
+                .ForMember(dest => dest.Descripcion, opt => opt.MapFrom(src => src.descripcion));
 
-                // Mapeos de Verificación
-                CreateMap<verificacione, VerificacionDto>()
+            // Mapeos de Verificación
+            CreateMap<verificacione, VerificacionDto>()
                     .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.id))
                     .ForMember(dest => dest.AgenciaId, opt => opt.MapFrom(src => src.agencia_id))
                     .ForMember(dest => dest.AcompananteId, opt => opt.MapFrom(src => src.acompanante_id))

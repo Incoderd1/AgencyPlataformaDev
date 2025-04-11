@@ -8,8 +8,7 @@ namespace AgencyPlatform.Application.DTOs.Servicio
 {
     public class AgregarServicioDto
     {
-        public int AcompananteId { get; set; }
-        public string Nombre { get; set; } = string.Empty;
+        public string Nombre { get; set; } = null!;
         public string? Descripcion { get; set; }
         public decimal? Precio { get; set; }
         public int? DuracionMinutos { get; set; }

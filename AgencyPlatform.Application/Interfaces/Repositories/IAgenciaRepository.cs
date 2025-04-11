@@ -40,5 +40,8 @@ namespace AgencyPlatform.Application.Interfaces.Repositories
 
         // Método para estadísticas (para vista vw_agencias_acompanantes)
         Task<List<agencia>> GetAgenciasPendientesVerificacionAsync();
+
+        Task<agencia?> GetAgenciaByUsuarioIdAsync(int usuarioId);
+
     }
 }

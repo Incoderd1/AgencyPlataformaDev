@@ -29,6 +29,9 @@ public partial class acompanante
 
     public string? idiomas { get; set; }
 
+    public long? score_actividad { get; set; }
+
+
     public string? disponibilidad { get; set; }
 
     public decimal? tarifa_base { get; set; }

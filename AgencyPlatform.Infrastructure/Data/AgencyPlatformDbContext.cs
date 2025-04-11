@@ -146,7 +146,7 @@ public partial class AgencyPlatformDbContext : DbContext
             entity.Property(e => e.esta_verificado).HasDefaultValue(false);
             entity.Property(e => e.genero).HasMaxLength(50);
             entity.Property(e => e.idiomas).HasMaxLength(255);
-            entity.Property(e => e.moneda)
+            entity.Property(e => e.score_actividad).HasDefaultValue(0L); entity.Property(e => e.moneda)
                 .HasMaxLength(10)
                 .HasDefaultValueSql("'USD'::character varying");
             entity.Property(e => e.nombre_perfil).HasMaxLength(100);

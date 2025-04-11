@@ -13,3 +13,4 @@ C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.Core\
 C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.Core\obj\Debug\net8.0\refint\AgencyPlatform.Core.dll
 C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.Core\obj\Debug\net8.0\AgencyPlatform.Core.pdb
 C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.Core\obj\Debug\net8.0\ref\AgencyPlatform.Core.dll
+C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.Core\obj\Debug\net8.0\AgencyPlatform.Core.sourcelink.json

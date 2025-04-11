@@ -17,5 +17,7 @@ namespace AgencyPlatform.Application.Interfaces.Repositories
         Task CrearAsync(usuario usuario);
         Task EliminarAsync(usuario usuario);
         Task GuardarCambiosAsync();
+        Task<usuario> GetByIdAsync(int id);
+
     }
 }

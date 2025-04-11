@@ -19,3 +19,4 @@ C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.Infra
 C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.Infrastructure\obj\Debug\net8.0\AgencyPlatform.Infrastructure.pdb
 C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.Infrastructure\obj\Debug\net8.0\AgencyPlatform.Infrastructure.genruntimeconfig.cache
 C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.Infrastructure\obj\Debug\net8.0\ref\AgencyPlatform.Infrastructure.dll
+C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.Infrastructure\obj\Debug\net8.0\AgencyPlatform.Infrastructure.sourcelink.json
