@@ -1,4 +1,5 @@
-﻿using AgencyPlatform.Core.Entities;
+﻿using AgencyPlatform.Application.DTOs.Estadisticas;
+using AgencyPlatform.Core.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,6 +34,8 @@ namespace AgencyPlatform.Application.Interfaces.Repositories
         Task EliminarCategoriaAsync(int acompananteId, int categoriaId);
         Task ActualizarScoreActividadAsync(int acompananteId, long scoreActividad);
         Task<bool> TieneAcompanantesAsync(int categoriaId);
+        Task<PerfilEstadisticasDto?> GetEstadisticasPerfilAsync(int acompananteId);
+
 
 
     }

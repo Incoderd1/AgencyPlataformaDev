@@ -48,6 +48,15 @@ public partial class acompanante
 
     public DateTime? updated_at { get; set; }
 
+    // Campos que faltan en tu clase acompanante:
+    public string? telefono { get; set; }           // character varying(20)
+    public string? whatsapp { get; set; }           // character varying(20)
+    public string? email_contacto { get; set; }     // character varying(255)
+    public bool? mostrar_telefono { get; set; }     // boolean
+    public bool? mostrar_whatsapp { get; set; }     // boolean
+    public bool? mostrar_email { get; set; }        // boolean
+
+
     public virtual ICollection<acompanante_categoria> acompanante_categoria { get; set; } = new List<acompanante_categoria>();
 
     public virtual agencia? agencia { get; set; }

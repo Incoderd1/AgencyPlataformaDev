@@ -162,3 +162,5 @@ C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.API\b
 C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.API\bin\Debug\net8.0\Microsoft.Extensions.ObjectPool.dll
 C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.API\bin\Debug\net8.0\AutoMapper.dll
 C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.API\obj\Debug\net8.0\AgencyPlatform.API.sourcelink.json
+C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.API\bin\Debug\net8.0\AgencyPlatform.API.staticwebassets.runtime.json
+C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.API\bin\Debug\net8.0\Swashbuckle.AspNetCore.Annotations.dll

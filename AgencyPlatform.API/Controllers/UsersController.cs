@@ -3,6 +3,7 @@ using AgencyPlatform.Application.DTOs.Usuarios;
 using AgencyPlatform.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -272,6 +273,115 @@ namespace AgencyPlatform.API.Controllers
             {
                 return BadRequest(new { Message = ex.Message });
             }
+        }
+
+        // ============================================================
+        // 🟦 POST: Registrar usuario acompañante
+        // ============================================================
+        [HttpPost("register-acompanante")]
+        [AllowAnonymous] // Permitir acceso sin autenticación
+        public async Task<IActionResult> RegisterAcompanante([FromBody] RegisterAcompananteRequest request)
+        {
+            try
+            {
+                if (request == null || string.IsNullOrWhiteSpace(request.Email) ||
+                    string.IsNullOrWhiteSpace(request.Password) ||
+                    string.IsNullOrWhiteSpace(request.NombrePerfil) ||
+                    string.IsNullOrWhiteSpace(request.Genero) ||
+                    request.Edad < 18)
+                    return BadRequest(new { Message = "Todos los campos obligatorios deben ser completados correctamente." });
+
+                var (user, acompananteId) = await _userService.RegisterUserAcompananteAsync(
+                    request.Email,
+                    request.Password,
+                    request.Telefono,
+                    request.NombrePerfil,
+                    request.Genero,
+                    request.Edad,
+                    request.Descripcion,
+                    request.Altura,
+                    request.Peso,
+                    request.Ciudad,
+                    request.Pais,
+                    request.Idiomas,
+                    request.Disponibilidad,
+                    request.TarifaBase,
+                    request.Moneda,
+                    request.CategoriaIds,
+                    request.Telefono,
+                    request.WhatsApp
+                );
+
+                return CreatedAtAction(nameof(GetById), new { id = user.id }, new
+                {
+                    UserId = user.id,
+                    Email = user.email,
+                    AcompananteId = acompananteId,
+                    NombrePerfil = request.NombrePerfil
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, new { Message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Error en RegisterAcompananteAsync:");
+                Console.WriteLine($"🔹 Mensaje: {ex.Message}");
+                Console.WriteLine($"🔹 StackTrace: {ex.StackTrace}");
+
+                return BadRequest(new
+                {
+                    Message = ex.Message
+                    // StackTrace = ex.StackTrace // Comentado para producción
+                });
+            }
+        }
+
+
+        public class RegisterAcompananteRequest
+        {
+            [Required]
+            [EmailAddress]
+            public string Email { get; set; }
+
+            [Required]
+            public string Password { get; set; }
+
+            public string? Telefono { get; set; }
+
+            [Required]
+            public string NombrePerfil { get; set; }
+
+            [Required]
+            public string Genero { get; set; }
+
+            [Required]
+            [Range(18, 99)]
+            public int Edad { get; set; }
+
+            public string? Descripcion { get; set; }
+
+            public int? Altura { get; set; }
+
+            public int? Peso { get; set; }
+
+            public string? Ciudad { get; set; }
+
+            public string? Pais { get; set; }
+
+            public string? Idiomas { get; set; }
+
+            public string? Disponibilidad { get; set; }
+
+            public decimal? TarifaBase { get; set; }
+
+            public string? Moneda { get; set; } = "USD";
+
+            public List<int>? CategoriaIds { get; set; }
+
+            public string? WhatsApp { get; set; }
+
         }
     }
 }

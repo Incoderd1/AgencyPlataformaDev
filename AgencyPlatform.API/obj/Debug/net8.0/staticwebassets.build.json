@@ -1,11 +1,77 @@
 {
   "Version": 1,
-  "Hash": "S/OcEXDkX6hGHSB5NerPgiNM9ZIiD/VR4aRk4ySz8Ys=",
+  "Hash": "iH8I6ulS+ZLk6thJwPzNxiDaXGLqu3reuaBCXW5yYQg=",
   "Source": "AgencyPlatform.API",
   "BasePath": "_content/AgencyPlatform.API",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
-  "Assets": []
+  "DiscoveryPatterns": [
+    {
+      "Name": "AgencyPlatform.API\\wwwroot",
+      "Source": "AgencyPlatform.API",
+      "ContentRoot": "C:\\Users\\siric\\OneDrive\\Escritorio\\PlataformaSokkaClone\\src\\AgencyPlatform.API\\wwwroot\\",
+      "BasePath": "_content/AgencyPlatform.API",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "C:\\Users\\siric\\OneDrive\\Escritorio\\PlataformaSokkaClone\\src\\AgencyPlatform.API\\wwwroot\\uploads\\acompanantes\\1\\20250412224410_d26e4072-3ab7-46e3-8518-b1f254f12aac.png",
+      "SourceId": "AgencyPlatform.API",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\siric\\OneDrive\\Escritorio\\PlataformaSokkaClone\\src\\AgencyPlatform.API\\wwwroot\\",
+      "BasePath": "_content/AgencyPlatform.API",
+      "RelativePath": "uploads/acompanantes/1/20250412224410_d26e4072-3ab7-46e3-8518-b1f254f12aac.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\acompanantes\\1\\20250412224410_d26e4072-3ab7-46e3-8518-b1f254f12aac.png"
+    },
+    {
+      "Identity": "C:\\Users\\siric\\OneDrive\\Escritorio\\PlataformaSokkaClone\\src\\AgencyPlatform.API\\wwwroot\\uploads\\acompanantes\\1\\20250413000028_5eac2a04-27ad-4ad8-936c-71f353237f3f.png",
+      "SourceId": "AgencyPlatform.API",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\siric\\OneDrive\\Escritorio\\PlataformaSokkaClone\\src\\AgencyPlatform.API\\wwwroot\\",
+      "BasePath": "_content/AgencyPlatform.API",
+      "RelativePath": "uploads/acompanantes/1/20250413000028_5eac2a04-27ad-4ad8-936c-71f353237f3f.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\acompanantes\\1\\20250413000028_5eac2a04-27ad-4ad8-936c-71f353237f3f.png"
+    },
+    {
+      "Identity": "C:\\Users\\siric\\OneDrive\\Escritorio\\PlataformaSokkaClone\\src\\AgencyPlatform.API\\wwwroot\\uploads\\acompanantes\\2\\20250413002435_5fde0cde-78ce-4668-8cf5-45898f617803.png",
+      "SourceId": "AgencyPlatform.API",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\siric\\OneDrive\\Escritorio\\PlataformaSokkaClone\\src\\AgencyPlatform.API\\wwwroot\\",
+      "BasePath": "_content/AgencyPlatform.API",
+      "RelativePath": "uploads/acompanantes/2/20250413002435_5fde0cde-78ce-4668-8cf5-45898f617803.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\acompanantes\\2\\20250413002435_5fde0cde-78ce-4668-8cf5-45898f617803.png"
+    }
+  ]
 }

@@ -88,6 +88,8 @@ public partial class AgencyPlatformDbContext : DbContext
     public virtual DbSet<failed_login_attempt> failed_login_attempt { get; set; }
     public virtual DbSet<intentos_login> intentos_login { get; set; }
 
+    public virtual DbSet<SolicitudAgencia> SolicitudAgencias { get; set; }
+
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
@@ -128,17 +130,11 @@ public partial class AgencyPlatformDbContext : DbContext
         modelBuilder.Entity<acompanante>(entity =>
         {
             entity.HasKey(e => e.id).HasName("acompanantes_pkey");
-
             entity.ToTable("acompanantes", "plataforma");
-
             entity.HasIndex(e => e.usuario_id, "acompanantes_usuario_id_key").IsUnique();
-
             entity.HasIndex(e => e.ciudad, "idx_acompanantes_ciudad");
-
             entity.HasIndex(e => e.esta_disponible, "idx_acompanantes_disponible");
-
             entity.HasIndex(e => e.esta_verificado, "idx_acompanantes_verificado");
-
             entity.Property(e => e.id).UseIdentityAlwaysColumn();
             entity.Property(e => e.ciudad).HasMaxLength(100);
             entity.Property(e => e.created_at).HasDefaultValueSql("CURRENT_TIMESTAMP");
@@ -146,23 +142,59 @@ public partial class AgencyPlatformDbContext : DbContext
             entity.Property(e => e.esta_verificado).HasDefaultValue(false);
             entity.Property(e => e.genero).HasMaxLength(50);
             entity.Property(e => e.idiomas).HasMaxLength(255);
-            entity.Property(e => e.score_actividad).HasDefaultValue(0L); entity.Property(e => e.moneda)
+            entity.Property(e => e.score_actividad).HasDefaultValue(0L);
+
+            // Campos de contacto
+            entity.Property(e => e.telefono).HasMaxLength(20);
+            entity.Property(e => e.whatsapp).HasMaxLength(20);
+            entity.Property(e => e.email_contacto).HasMaxLength(255);
+
+            // Campos de visibilidad con valores predeterminados
+            entity.Property(e => e.mostrar_telefono).HasDefaultValue(true);
+            entity.Property(e => e.mostrar_whatsapp).HasDefaultValue(true);
+            entity.Property(e => e.mostrar_email).HasDefaultValue(true);
+
+            entity.Property(e => e.moneda)
                 .HasMaxLength(10)
                 .HasDefaultValueSql("'USD'::character varying");
             entity.Property(e => e.nombre_perfil).HasMaxLength(100);
             entity.Property(e => e.pais).HasMaxLength(100);
             entity.Property(e => e.tarifa_base).HasPrecision(10, 2);
             entity.Property(e => e.updated_at).HasDefaultValueSql("CURRENT_TIMESTAMP");
-
             entity.HasOne(d => d.agencia).WithMany(p => p.acompanantes)
                 .HasForeignKey(d => d.agencia_id)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("acompanantes_agencia_id_fkey");
-
             entity.HasOne(d => d.usuario).WithOne(p => p.acompanante)
                 .HasForeignKey<acompanante>(d => d.usuario_id)
                 .HasConstraintName("acompanantes_usuario_id_fkey");
         });
+        modelBuilder.Entity<SolicitudAgencia>(entity =>
+        {
+            entity.ToTable("solicitudes_agencia", "plataforma");
+
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.AcompananteId).HasColumnName("acompanante_id");
+            entity.Property(e => e.AgenciaId).HasColumnName("agencia_id");
+            entity.Property(e => e.Estado).HasColumnName("estado").HasMaxLength(20).HasDefaultValue("pendiente");
+            entity.Property(e => e.FechaSolicitud).HasColumnName("fecha_solicitud").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.FechaRespuesta).HasColumnName("fecha_respuesta");
+
+            entity.HasIndex(e => new { e.AcompananteId, e.AgenciaId }).IsUnique();
+
+            entity.HasOne(e => e.Acompanante)
+                .WithMany()
+                .HasForeignKey(e => e.AcompananteId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Agencia)
+                .WithMany()
+                .HasForeignKey(e => e.AgenciaId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
 
         modelBuilder.Entity<acompanante_categoria>(entity =>
         {

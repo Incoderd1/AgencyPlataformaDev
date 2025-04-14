@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using AgencyPlatform.Application.DTOs.Estadisticas;
 
 namespace AgencyPlatform.Infrastructure.Repositories
 {
@@ -243,7 +244,7 @@ namespace AgencyPlatform.Infrastructure.Repositories
                 {
                     acompanante_id = acompananteId,
                     categoria_id = categoriaId,
-                    created_at = DateTime.Now
+                    created_at = DateTime.UtcNow
                 };
 
                 await _context.acompanante_categorias.AddAsync(nuevaCategoria);
@@ -267,5 +268,40 @@ namespace AgencyPlatform.Infrastructure.Repositories
                 await _context.SaveChangesAsync();
             }
         }
+        public async Task<PerfilEstadisticasDto?> GetEstadisticasPerfilAsync(int acompananteId)
+        {
+            var perfil = await _context.vw_ranking_perfiles
+                .Where(p => p.id == acompananteId)
+                .Select(p => new PerfilEstadisticasDto
+                {
+                    AcompananteId = p.id ?? 0,
+                    NombrePerfil = p.nombre_perfil,
+                    Ciudad = p.ciudad,
+                    EstaVerificado = p.esta_verificado ?? false,
+                    TotalVisitas = p.total_visitas.HasValue ? Convert.ToInt32(p.total_visitas.Value) : 0,
+                    TotalContactos = p.total_contactos.HasValue ? Convert.ToInt32(p.total_contactos.Value) : 0,
+                    ScoreActividad = p.score_actividad.HasValue ? Convert.ToInt32(p.score_actividad.Value) : 0
+                })
+                .FirstOrDefaultAsync();
+
+            if (perfil == null)
+                return null;
+
+            perfil.FotoUrl = await _context.fotos
+                .Where(f => f.acompanante_id == acompananteId && f.es_principal == true)
+                .Select(f => f.url)
+                .FirstOrDefaultAsync();
+
+            perfil.UltimaVisita = await _context.visitas_perfils
+                .Where(v => v.acompanante_id == acompananteId)
+                .OrderByDescending(v => v.fecha_visita)
+                .Select(v => (DateTime?)v.fecha_visita)
+                .FirstOrDefaultAsync();
+
+            return perfil;
+        }
+
+
+
     }
 }

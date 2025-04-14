@@ -43,5 +43,15 @@ namespace AgencyPlatform.Application.Interfaces.Repositories
 
         Task<agencia?> GetAgenciaByUsuarioIdAsync(int usuarioId);
 
+
+        Task<bool> ExisteSolicitudPendienteAsync(int acompananteId, int agenciaId);
+        Task CrearSolicitudAsync(SolicitudAgencia solicitud);
+        Task<List<SolicitudAgencia>> GetSolicitudesPendientesPorAgenciaAsync(int agenciaId);
+        Task<SolicitudAgencia?> GetSolicitudByIdAsync(int solicitudId);
+
+        Task UpdateSolicitudAsync(SolicitudAgencia solicitud);
+
+
+
     }
 }

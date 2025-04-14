@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using AgencyPlatform.Application.DTOs.SolicitudesAgencia;
 
 namespace AgencyPlatform.Infrastructure.Services.Agencias
 {
@@ -445,5 +446,134 @@ namespace AgencyPlatform.Infrastructure.Services.Agencias
                 await _agenciaRepository.UpdateComisionPorcentajeAsync(agenciaId, nuevaComision);
             }
         }
+
+
+        
+        public async Task<List<AgenciaDisponibleDto>> GetAgenciasDisponiblesAsync()
+        {
+            var agencias = await _agenciaRepository.GetAllAsync();
+
+            // Opcional: filtrar solo las verificadas
+            agencias = agencias.Where(a => a.esta_verificada == true).ToList();
+
+            return agencias.Select(a => new AgenciaDisponibleDto
+            {
+                Id = a.id,
+                Nombre = a.nombre,
+                Ciudad = a.ciudad,
+                Pais = a.pais,
+                EstaVerificada = a.esta_verificada ?? false
+            }).ToList();
+        }
+
+
+
+        public async Task<List<SolicitudAgenciaDto>> GetSolicitudesPendientesAsync()
+        {
+            var usuarioId = ObtenerUsuarioId();
+
+            var agencia = await _agenciaRepository.GetByUsuarioIdAsync(usuarioId)
+                ?? throw new UnauthorizedAccessException("No tienes una agencia asociada.");
+
+            var solicitudes = await _agenciaRepository.GetSolicitudesPendientesPorAgenciaAsync(agencia.id);
+
+            return solicitudes.Select(s => new SolicitudAgenciaDto
+            {
+                Id = s.Id,
+                AcompananteId = s.AcompananteId,
+                AgenciaId = s.AgenciaId,
+                Estado = s.Estado,
+                FechaSolicitud = s.FechaSolicitud,
+                FechaRespuesta = s.FechaRespuesta
+            }).ToList();
+        }
+        public async Task AprobarSolicitudAsync(int solicitudId)
+        {
+            var solicitud = await _agenciaRepository.GetSolicitudByIdAsync(solicitudId)
+                ?? throw new Exception("Solicitud no encontrada.");
+
+            await VerificarPermisosAgencia(solicitud.AgenciaId); // Solo la agencia que la recibió puede aprobarla
+
+            if (solicitud.Estado != "pendiente")
+                throw new Exception("La solicitud ya ha sido procesada.");
+
+            solicitud.Estado = "aprobada";
+            solicitud.FechaRespuesta = DateTime.UtcNow;
+
+            var acompanante = await _acompananteRepository.GetByIdAsync(solicitud.AcompananteId)
+                ?? throw new Exception("Acompañante no encontrado.");
+
+            acompanante.agencia_id = solicitud.AgenciaId;
+
+            await _agenciaRepository.UpdateSolicitudAsync(solicitud);
+            await _acompananteRepository.UpdateAsync(acompanante);
+            await _agenciaRepository.SaveChangesAsync();
+            await _acompananteRepository.SaveChangesAsync();
+        }
+
+        public async Task RechazarSolicitudAsync(int solicitudId)
+        {
+            var usuarioId = ObtenerUsuarioId();
+
+            var agencia = await _agenciaRepository.GetByUsuarioIdAsync(usuarioId)
+                ?? throw new UnauthorizedAccessException("No tienes una agencia asociada.");
+
+            var solicitud = await _agenciaRepository.GetSolicitudByIdAsync(solicitudId)
+                ?? throw new Exception("Solicitud no encontrada.");
+
+            if (solicitud.AgenciaId != agencia.id)
+                throw new UnauthorizedAccessException("No puedes rechazar esta solicitud.");
+
+            if (solicitud.Estado != "pendiente")
+                throw new Exception("Esta solicitud ya fue procesada.");
+
+            solicitud.Estado = "rechazada";
+            solicitud.FechaRespuesta = DateTime.UtcNow;
+
+            await _agenciaRepository.SaveChangesAsync();
+        }
+        public async Task EnviarSolicitudAsync(int agenciaId)
+        {
+            var usuarioId = ObtenerUsuarioId();
+
+            var acompanante = await _acompananteRepository.GetByUsuarioIdAsync(usuarioId)
+                ?? throw new Exception("Perfil de acompañante no encontrado.");
+
+            var yaExiste = await _agenciaRepository.ExisteSolicitudPendienteAsync(acompanante.id, agenciaId);
+            if (yaExiste)
+                throw new Exception("Ya tienes una solicitud pendiente con esta agencia.");
+
+            var nuevaSolicitud = new SolicitudAgencia
+            {
+                AcompananteId = acompanante.id,
+                AgenciaId = agenciaId,
+                Estado = "pendiente",
+                FechaSolicitud = DateTime.UtcNow
+            };
+
+            await _agenciaRepository.CrearSolicitudAsync(nuevaSolicitud);
+            await _agenciaRepository.SaveChangesAsync();
+        }
+
+        public async Task<PerfilEstadisticasDto?> GetEstadisticasPerfilAsync(int acompananteId)
+        {
+            var acompanante = await _acompananteRepository.GetByIdAsync(acompananteId)
+                ?? throw new Exception("Acompañante no encontrado.");
+
+            var usuarioId = ObtenerUsuarioId();
+
+            var agencia = await _agenciaRepository.GetByUsuarioIdAsync(usuarioId)
+                ?? throw new UnauthorizedAccessException("No tienes una agencia asociada.");
+
+            if (acompanante.agencia_id != agencia.id)
+                throw new UnauthorizedAccessException("Este perfil no pertenece a tu agencia.");
+
+            return await _acompananteRepository.GetEstadisticasPerfilAsync(acompananteId);
+        }
+
+
+
+
+
     }
 }

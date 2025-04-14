@@ -13,6 +13,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AgencyPlatform.Application.Interfaces.Repositories.Archivos;
+using AgencyPlatform.Infrastructure.Repositories;
+using System.Security.Claims;
 
 namespace AgencyPlatform.Infrastructure.Services.Acompanantes
 {
@@ -26,6 +28,7 @@ namespace AgencyPlatform.Infrastructure.Services.Acompanantes
         private readonly IVisitaPerfilRepository _visitaPerfilRepository;
         private readonly IContactoRepository _contactoRepository;
         private readonly IMapper _mapper;
+        private readonly IAgenciaRepository _agenciaRepository;
 
         public AcompananteService(
             IAcompananteRepository acompananteRepository,
@@ -35,7 +38,7 @@ namespace AgencyPlatform.Infrastructure.Services.Acompanantes
             IArchivosService archivosService,
             IVisitaPerfilRepository visitaPerfilRepository,
             IContactoRepository contactoRepository,
-            IMapper mapper)
+            IMapper mapper, IAgenciaRepository agenciaRepository)
         {
             _acompananteRepository = acompananteRepository;
             _fotoRepository = fotoRepository;
@@ -45,6 +48,7 @@ namespace AgencyPlatform.Infrastructure.Services.Acompanantes
             _visitaPerfilRepository = visitaPerfilRepository;
             _contactoRepository = contactoRepository;
             _mapper = mapper;
+           _agenciaRepository =  agenciaRepository;
         }
 
         public async Task<List<AcompananteDto>> GetAllAsync()
@@ -69,52 +73,106 @@ namespace AgencyPlatform.Infrastructure.Services.Acompanantes
         {
             // Verificar si el usuario ya tiene un perfil de acompañante
             var existingAcompanante = await _acompananteRepository.GetByUsuarioIdAsync(usuarioId);
-            if (existingAcompanante != null)
-                throw new InvalidOperationException("El usuario ya tiene un perfil de acompañante");
 
             // Verificar que el usuario exista
             var usuario = await _usuarioRepository.GetByIdAsync(usuarioId);
             if (usuario == null)
                 throw new InvalidOperationException("El usuario no existe");
 
-            // Crear el nuevo acompañante
-            var acompanante = new acompanante
+            if (existingAcompanante != null)
             {
-                usuario_id = usuarioId,
-                agencia_id = nuevoAcompanante.AgenciaId,
-                nombre_perfil = nuevoAcompanante.NombrePerfil,
-                genero = nuevoAcompanante.Genero,
-                edad = nuevoAcompanante.Edad,
-                descripcion = nuevoAcompanante.Descripcion,
-                altura = nuevoAcompanante.Altura,
-                peso = nuevoAcompanante.Peso,
-                ciudad = nuevoAcompanante.Ciudad,
-                pais = nuevoAcompanante.Pais,
-                idiomas = nuevoAcompanante.Idiomas,
-                disponibilidad = nuevoAcompanante.Disponibilidad,
-                tarifa_base = nuevoAcompanante.TarifaBase,
-                moneda = nuevoAcompanante.Moneda ?? "USD",
-                esta_verificado = false,
-                esta_disponible = true,
-                created_at = DateTime.UtcNow,
-                score_actividad = 0
-            };
+                // En lugar de lanzar excepción, actualizar el perfil existente
+                existingAcompanante.agencia_id = nuevoAcompanante.AgenciaId;
+                existingAcompanante.nombre_perfil = nuevoAcompanante.NombrePerfil;
+                existingAcompanante.genero = nuevoAcompanante.Genero;
+                existingAcompanante.edad = nuevoAcompanante.Edad;
+                existingAcompanante.descripcion = nuevoAcompanante.Descripcion;
+                existingAcompanante.altura = nuevoAcompanante.Altura;
+                existingAcompanante.peso = nuevoAcompanante.Peso;
+                existingAcompanante.ciudad = nuevoAcompanante.Ciudad;
+                existingAcompanante.pais = nuevoAcompanante.Pais;
+                existingAcompanante.idiomas = nuevoAcompanante.Idiomas;
+                existingAcompanante.disponibilidad = nuevoAcompanante.Disponibilidad;
+                existingAcompanante.tarifa_base = nuevoAcompanante.TarifaBase;
+                existingAcompanante.moneda = nuevoAcompanante.Moneda ?? "USD";
 
-            await _acompananteRepository.AddAsync(acompanante);
-            await _acompananteRepository.SaveChangesAsync();
+                // Actualizar campos nuevos de contacto
+                existingAcompanante.telefono = nuevoAcompanante.Telefono;
+                existingAcompanante.whatsapp = nuevoAcompanante.WhatsApp;
+                existingAcompanante.email_contacto = nuevoAcompanante.EmailContacto;
+                existingAcompanante.mostrar_telefono = true;
+                existingAcompanante.mostrar_whatsapp = true;
+                existingAcompanante.mostrar_email = true;
 
-            // Agregar categorías si se proporcionaron
-            if (nuevoAcompanante.CategoriaIds != null && nuevoAcompanante.CategoriaIds.Any())
-            {
-                foreach (var categoriaId in nuevoAcompanante.CategoriaIds)
+                existingAcompanante.updated_at = DateTime.UtcNow;
+
+                await _acompananteRepository.UpdateAsync(existingAcompanante);
+                await _acompananteRepository.SaveChangesAsync();
+
+                // Agregar categorías si se proporcionaron
+                if (nuevoAcompanante.CategoriaIds != null && nuevoAcompanante.CategoriaIds.Any())
                 {
-                    await _acompananteRepository.AgregarCategoriaAsync(acompanante.id, categoriaId);
+                    foreach (var categoriaId in nuevoAcompanante.CategoriaIds)
+                    {
+                        // Verificar si ya tiene la categoría para evitar duplicados
+                        if (!await _acompananteRepository.TieneCategoriaAsync(existingAcompanante.id, categoriaId))
+                        {
+                            await _acompananteRepository.AgregarCategoriaAsync(existingAcompanante.id, categoriaId);
+                        }
+                    }
                 }
+
+                return existingAcompanante.id;
             }
+            else
+            {
+                // Crear el nuevo acompañante (código original)
+                var acompanante = new acompanante
+                {
+                    usuario_id = usuarioId,
+                    agencia_id = nuevoAcompanante.AgenciaId,
+                    nombre_perfil = nuevoAcompanante.NombrePerfil,
+                    genero = nuevoAcompanante.Genero,
+                    edad = nuevoAcompanante.Edad,
+                    descripcion = nuevoAcompanante.Descripcion,
+                    altura = nuevoAcompanante.Altura,
+                    peso = nuevoAcompanante.Peso,
+                    ciudad = nuevoAcompanante.Ciudad,
+                    pais = nuevoAcompanante.Pais,
+                    idiomas = nuevoAcompanante.Idiomas,
+                    disponibilidad = nuevoAcompanante.Disponibilidad,
+                    tarifa_base = nuevoAcompanante.TarifaBase,
+                    moneda = nuevoAcompanante.Moneda ?? "USD",
 
-            return acompanante.id;
+                    // Campos nuevos de contacto
+                    telefono = nuevoAcompanante.Telefono,
+                    whatsapp = nuevoAcompanante.WhatsApp,
+                    email_contacto = nuevoAcompanante.EmailContacto,
+                    mostrar_telefono = true,
+                    mostrar_whatsapp = true,
+                    mostrar_email = true,
+
+                    esta_verificado = false,
+                    esta_disponible = true,
+                    created_at = DateTime.UtcNow,
+                    score_actividad = 0
+                };
+
+                await _acompananteRepository.AddAsync(acompanante);
+                await _acompananteRepository.SaveChangesAsync();
+
+                // Agregar categorías si se proporcionaron
+                if (nuevoAcompanante.CategoriaIds != null && nuevoAcompanante.CategoriaIds.Any())
+                {
+                    foreach (var categoriaId in nuevoAcompanante.CategoriaIds)
+                    {
+                        await _acompananteRepository.AgregarCategoriaAsync(acompanante.id, categoriaId);
+                    }
+                }
+
+                return acompanante.id;
+            }
         }
-
         public async Task ActualizarAsync(UpdateAcompananteDto acompananteActualizado, int usuarioId, int rolId)
         {
             var acompanante = await _acompananteRepository.GetByIdAsync(acompananteActualizado.Id);
@@ -182,6 +240,8 @@ namespace AgencyPlatform.Infrastructure.Services.Acompanantes
             await _acompananteRepository.UpdateAsync(acompanante);
             await _acompananteRepository.SaveChangesAsync();
         }
+
+
 
         public async Task EliminarAsync(int id, int usuarioId, int rolId)
         {
@@ -456,7 +516,7 @@ namespace AgencyPlatform.Infrastructure.Services.Acompanantes
 
             return _mapper.Map<List<AcompananteDto>>(acompanantes);
         }
-
+      
         public async Task<List<AcompananteDto>> GetDestacadosAsync()
         {
             var acompanantes = await _acompananteRepository.GetDestacadosAsync();
@@ -528,6 +588,9 @@ namespace AgencyPlatform.Infrastructure.Services.Acompanantes
             await _acompananteRepository.UpdateAsync(acompanante);
             await _acompananteRepository.SaveChangesAsync();
         }
+
+      
+
 
         public async Task RegistrarVisitaAsync(int acompananteId, string ipVisitante, string userAgent, int? clienteId = null)
         {

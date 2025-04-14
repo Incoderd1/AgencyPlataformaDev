@@ -16,6 +16,9 @@ using AgencyPlatform.Infrastructure.Services.Email;
 using Microsoft.AspNetCore.Http;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
+using AgencyPlatform.Application.Interfaces.Services.Acompanantes;
+using AgencyPlatform.Infrastructure.Services.Acompanantes;
+using AgencyPlatform.Application.DTOs.Acompanantes;
 
 namespace AgencyPlatform.Application.Services
 {
@@ -27,6 +30,8 @@ namespace AgencyPlatform.Application.Services
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<UserService> _logger;
         private readonly IIntentoLoginRepository _intentoLoginRepository;
+        private readonly IAcompananteService _acompananteService;
+
 
 
         // Lista de contraseñas comunes para prevenir su uso
@@ -41,14 +46,15 @@ namespace AgencyPlatform.Application.Services
             IEmailSender emailSender,
             IHttpContextAccessor httpContextAccessor,
             ILogger<UserService> logger,
-            IIntentoLoginRepository intentoLoginRepository)
+            IIntentoLoginRepository intentoLoginRepository,IAcompananteService acompananteService)
         {
             _userRepository = userRepository;
             _configuration = configuration;
             _emailSender = emailSender;
             _httpContextAccessor = httpContextAccessor;
             _logger = logger;
-            _intentoLoginRepository = intentoLoginRepository;   
+            _intentoLoginRepository = intentoLoginRepository;
+            _acompananteService = acompananteService;
         }
 
         //public async Task<usuario> RegisterUserAsync(string email, string password, string tipoUsuario, string? phone = null)
@@ -203,10 +209,10 @@ namespace AgencyPlatform.Application.Services
                         _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress);
                     throw new UnauthorizedAccessException("No tienes permisos para crear usuarios administradores.");
                 }
-                // Si no está autenticado o no es admin, solo puede registrar clientes o agencias
-                if (!isCurrentUserAdmin && tipoUsuario != "cliente" && tipoUsuario != "agencia")
+                // Si no está autenticado o no es admin, solo puede registrar clientes, agencias o acompañantes
+                if (!isCurrentUserAdmin && tipoUsuario != "cliente" && tipoUsuario != "agencia" && tipoUsuario != "acompanante")
                 {
-                    throw new ArgumentException("Solo puedes registrarte como 'cliente' o 'agencia'.");
+                    throw new ArgumentException("Solo puedes registrarte como 'cliente', 'agencia' o 'acompañante'.");
                 }
 
                 // Verificar si el usuario ya existe
@@ -673,6 +679,72 @@ namespace AgencyPlatform.Application.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al eliminar usuario ID: {UserId}", id);
+                throw;
+            }
+        }
+        public async Task<(usuario Usuario, int AcompananteId)> RegisterUserAcompananteAsync(
+                string email,
+                string password,
+                string? phone,
+                string nombrePerfil,
+                string genero,
+                int edad,
+                string? descripcion = null,
+                int? altura = null,
+                int? peso = null,
+                string? ciudad = null,
+                string? pais = null,
+                string? idiomas = null,
+                string? disponibilidad = null,
+                decimal? tarifaBase = null,
+                string? moneda = "USD",
+                List<int>? categoriaIds = null,
+                string? telefono = null,
+                string? whatsapp = null,
+                string? emailContacto = null)
+        {
+            try
+            {
+                _logger.LogInformation("Iniciando registro combinado de usuario-acompañante con email: {Email}", email);
+
+                // 1. Registrar el usuario con rol de acompañante
+                var user = await RegisterUserAsync(email, password, "acompanante", phone);
+
+                // 2. Crear el DTO para el acompañante
+                var acompananteDto = new CrearAcompananteDto
+                {
+                    NombrePerfil = nombrePerfil,
+                    Genero = genero,
+                    Edad = edad,
+                    Descripcion = descripcion,
+                    Altura = altura,
+                    Peso = peso,
+                    Ciudad = ciudad,
+                    Pais = pais,
+                    Idiomas = idiomas,
+                    Disponibilidad = disponibilidad,
+                    TarifaBase = tarifaBase,
+                    Moneda = moneda,
+                    CategoriaIds = categoriaIds ?? new List<int>(),
+                    Telefono = telefono,
+                    WhatsApp = whatsapp
+                };
+
+                // Asignar email de contacto igual al del usuario si no se especifica
+                acompananteDto.EmailContacto = emailContacto ?? email;
+                
+
+                // 3. Crear el perfil de acompañante usando el servicio existente
+                int acompananteId = await _acompananteService.CrearAsync(acompananteDto, user.id);
+
+                _logger.LogInformation("Usuario-acompañante registrado exitosamente. Usuario ID: {UserId}, Acompañante ID: {AcompananteId}",
+                    user.id, acompananteId);
+
+                return (user, acompananteId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en registro combinado usuario-acompañante con email: {Email}", email);
                 throw;
             }
         }

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using AgencyPlatform.Application.DTOs.Estadisticas;
 using AgencyPlatform.Application.DTOs.Anuncios;
 using AgencyPlatform.Application.DTOs.Acompanantes;
+using AgencyPlatform.Application.DTOs.SolicitudesAgencia;
 
 namespace AgencyPlatform.Application.Interfaces.Services.Agencias
 {
@@ -44,5 +45,19 @@ namespace AgencyPlatform.Application.Interfaces.Services.Agencias
         // Solo para administradores
         Task<bool> VerificarAgenciaAsync(int agenciaId, bool verificada);
         Task<List<AgenciaPendienteVerificacionDto>> GetAgenciasPendientesVerificacionAsync();
+
+        Task<List<AgenciaDisponibleDto>> GetAgenciasDisponiblesAsync();
+
+        Task<List<SolicitudAgenciaDto>> GetSolicitudesPendientesAsync();
+        Task AprobarSolicitudAsync(int solicitudId);
+        Task RechazarSolicitudAsync(int solicitudId);
+
+        Task EnviarSolicitudAsync(int agenciaId);
+        Task<PerfilEstadisticasDto?> GetEstadisticasPerfilAsync(int acompananteId);
+
+
+
+
+
     }
 }

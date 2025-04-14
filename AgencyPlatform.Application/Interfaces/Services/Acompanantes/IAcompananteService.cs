@@ -1,4 +1,5 @@
 ﻿using AgencyPlatform.Application.DTOs.Acompanantes;
+using AgencyPlatform.Application.DTOs.Estadisticas;
 using AgencyPlatform.Application.DTOs.Foto;
 using AgencyPlatform.Application.DTOs.Servicio;
 using System;
@@ -51,5 +52,9 @@ namespace AgencyPlatform.Application.Interfaces.Services.Acompanantes
 
         // Disponibilidad
         Task CambiarDisponibilidadAsync(int acompananteId, bool estaDisponible, int usuarioId, int rolId);
+  
+
+
+
     }
 }

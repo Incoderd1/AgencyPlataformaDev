@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using AgencyPlatform.Application.DTOs;
 using System.Security.Claims;
+using AgencyPlatform.Application.Interfaces.Services.Agencias;
+using AgencyPlatform.Application.DTOs.SolicitudesAgencia;
 
 namespace AgencyPlatform.API.Controllers
 {
@@ -16,13 +18,15 @@ namespace AgencyPlatform.API.Controllers
     {
         private readonly IAcompananteService _acompananteService;
         private readonly ILogger<AcompanantesController> _logger;
+        private readonly IAgenciaService _agenciaService;
 
         public AcompanantesController(
            IAcompananteService acompananteService,
-           ILogger<AcompanantesController> logger)
+           ILogger<AcompanantesController> logger,IAgenciaService agenciaService)
         {
             _acompananteService = acompananteService;
             _logger = logger;
+            _agenciaService = agenciaService;   
         }
 
 
@@ -503,6 +507,14 @@ namespace AgencyPlatform.API.Controllers
                 return StatusCode(500, "Error interno del servidor");
             }
         }
+        [HttpGet("agencias/disponibles")]
+        //[Authorize(Roles = "acompanante")]
+        public async Task<IActionResult> GetAgenciasDisponibles()
+        {
+            var agencias = await _agenciaService.GetAgenciasDisponiblesAsync();
+            return Ok(agencias);
+        }
+
 
         // PUT: api/Acompanantes/5/Disponibilidad
         [HttpPut("{id}/Disponibilidad")]
@@ -527,6 +539,15 @@ namespace AgencyPlatform.API.Controllers
                 return StatusCode(500, "Error interno del servidor");
             }
         }
+
+        [HttpPost("solicitar-agencia")]
+        //[Authorize(Roles = "acompanante")]
+        public async Task<IActionResult> SolicitarAgencia([FromBody] CrearSolicitudAgenciaDto dto)
+        {
+            await _agenciaService.EnviarSolicitudAsync(dto.AgenciaId);
+            return Ok(new { Message = "Solicitud enviada correctamente." });
+        }
+
 
         // Métodos privados auxiliares
         private int GetUsuarioIdFromToken()

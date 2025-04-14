@@ -126,6 +126,39 @@ namespace AgencyPlatform.API.Controllers
         public async Task<ActionResult<List<AgenciaPendienteVerificacionDto>>> GetPendientes()
             => Ok(await _agenciaService.GetAgenciasPendientesVerificacionAsync());
 
+
+        [HttpGet("solicitudes")]
+        //[Authorize(Roles = "agencia")]
+        public async Task<IActionResult> GetSolicitudesPendientes()
+        {
+            var solicitudes = await _agenciaService.GetSolicitudesPendientesAsync();
+            return Ok(solicitudes);
+        }
+
+        [HttpPut("solicitudes/{solicitudId}/aprobar")]
+        public async Task<IActionResult> AprobarSolicitud(int solicitudId)
+        {
+            await _agenciaService.AprobarSolicitudAsync(solicitudId);
+            return Ok(new { mensaje = "Solicitud aprobada y acompañante asignado a la agencia." });
+        }
+
+        [HttpPost("solicitudes/{id}/rechazar")]
+        //[Authorize(Roles = "agencia")]
+        public async Task<IActionResult> RechazarSolicitud(int id)
+        {
+            await _agenciaService.RechazarSolicitudAsync(id);
+            return Ok(new { mensaje = "Solicitud rechazada correctamente" });
+        }
+       
+        [HttpGet("estadisticas/perfil/{acompananteId}")]
+        public async Task<IActionResult> GetEstadisticasPorPerfil(int acompananteId)
+        {
+            var estadisticas = await _agenciaService.GetEstadisticasPerfilAsync(acompananteId);
+            return Ok(estadisticas);
+        }
+
+
+
         // 🔐 Utilidad
         private int GetUsuarioId()
         {

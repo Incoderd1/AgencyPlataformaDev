@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace AgencyPlatform.Application.DTOs.Acompanantes
 {
+    // DTO sin los campos de mostrar
     public class AcompananteCreateDto
     {
         [Required]
@@ -38,6 +39,17 @@ namespace AgencyPlatform.Application.DTOs.Acompanantes
 
         public bool EstaDisponible { get; set; } = true;
 
+        // Solo los campos de contacto
+        [Phone]
+        public string Telefono { get; set; }
+
+        [Phone]
+        public string WhatsApp { get; set; }
+
+        [EmailAddress]
+        public string EmailContacto { get; set; }
+
         public List<int> CategoriaIds { get; set; } = new List<int>();
     }
 }
+

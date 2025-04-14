@@ -206,5 +206,37 @@ namespace AgencyPlatform.Infrastructure.Repositories
                 await _context.SaveChangesAsync();
             }
         }
+        public async Task<bool> ExisteSolicitudPendienteAsync(int acompananteId, int agenciaId)
+        {
+            return await _context.SolicitudAgencias.AnyAsync(s =>
+                s.AcompananteId == acompananteId &&
+                s.AgenciaId == agenciaId &&
+                s.Estado == "pendiente");
+        }
+
+        public async Task CrearSolicitudAsync(SolicitudAgencia solicitud)
+        {
+            await _context.SolicitudAgencias.AddAsync(solicitud);
+        }
+
+        public async Task<List<SolicitudAgencia>> GetSolicitudesPendientesPorAgenciaAsync(int agenciaId)
+        {
+            return await _context.SolicitudAgencias
+                .Where(s => s.AgenciaId == agenciaId && s.Estado == "pendiente")
+                .Include(s => s.Acompanante)
+                .ToListAsync();
+        }
+
+        public async Task<SolicitudAgencia?> GetSolicitudByIdAsync(int solicitudId)
+        {
+            return await _context.SolicitudAgencias
+                .Include(s => s.Acompanante)
+                .FirstOrDefaultAsync(s => s.Id == solicitudId);
+        }
+        public async Task UpdateSolicitudAsync(SolicitudAgencia solicitud)
+        {
+            _context.SolicitudAgencias.Update(solicitud);
+        }
+
     }
 }
