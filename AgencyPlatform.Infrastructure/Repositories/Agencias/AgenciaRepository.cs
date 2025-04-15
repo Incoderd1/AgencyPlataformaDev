@@ -89,7 +89,7 @@ namespace AgencyPlatform.Infrastructure.Repositories
                 .Include(a => a.servicios)
                 .Include(a => a.acompanante_categoria)
                     .ThenInclude(ac => ac.categoria)
-                .Where(a => a.agencia_id == agenciaId)
+                .Where(a => a.agencia_id == agenciaId && a.esta_disponible == true)
                 .ToListAsync();
         }
 

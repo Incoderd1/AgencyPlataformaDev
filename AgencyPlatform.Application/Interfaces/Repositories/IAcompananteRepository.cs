@@ -38,5 +38,17 @@ namespace AgencyPlatform.Application.Interfaces.Repositories
 
 
 
+        Task<int> CountByAgenciaIdAsync(int agenciaId);
+        Task<int> CountVerificadosByAgenciaIdAsync(int agenciaId);
+        Task<List<acompanante>> GetDestacadosByAgenciaIdAsync(int agenciaId, int limit = 5);
+
+        Task<PaginatedResult<acompanante>> GetIndependientesAsync(
+                int pageNumber,
+                int pageSize,
+                string filterBy,
+                string sortBy,
+                bool sortDesc);
+
+
     }
 }

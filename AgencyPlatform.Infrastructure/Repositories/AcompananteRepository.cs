@@ -300,8 +300,108 @@ namespace AgencyPlatform.Infrastructure.Repositories
 
             return perfil;
         }
+        public async Task<int> CountByAgenciaIdAsync(int agenciaId)
+        {
+            return await _context.acompanantes
+                .Where(a => a.agencia_id == agenciaId)
+                .CountAsync();
+        }
+
+        public async Task<int> CountVerificadosByAgenciaIdAsync(int agenciaId)
+        {
+            return await _context.acompanantes
+                .Where(a => a.agencia_id == agenciaId && a.esta_verificado == true)
+                .CountAsync();
+        }
+
+        public async Task<List<acompanante>> GetDestacadosByAgenciaIdAsync(int agenciaId, int limit = 5)
+        {
+            return await _context.acompanantes
+                .Include(a => a.visitas_perfils)
+                .Include(a => a.contactos)
+                .Where(a => a.agencia_id == agenciaId && a.esta_disponible == true)
+                .OrderByDescending(a => a.visitas_perfils.Count + (a.contactos.Count * 5))
+                .Take(limit)
+                .ToListAsync();
+        }
+
+        public async Task<PaginatedResult<acompanante>> GetIndependientesAsync(
+            int pageNumber,
+            int pageSize,
+            string filterBy,
+            string sortBy,
+            bool sortDesc)
+        {
+            // Consulta base para acompañantes sin agencia
+            var query = _context.acompanantes
+                .Include(a => a.fotos)
+                .Where(a => a.agencia_id == null && (a.esta_disponible ?? true))
+                .AsQueryable();
+
+            // Aplicar filtros si existen
+            if (!string.IsNullOrEmpty(filterBy))
+            {
+                query = query.Where(a =>
+                    a.nombre_perfil.Contains(filterBy) ||
+                    a.ciudad.Contains(filterBy) ||
+                    a.descripcion.Contains(filterBy));
+            }
+
+            // Aplicar ordenamiento
+            query = ApplySorting(query, sortBy, sortDesc);
+
+            // Obtener total de registros
+            var totalItems = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+            // Aplicar paginación
+            var items = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PaginatedResult<acompanante>
+            {
+                TotalItems = totalItems,
+                TotalPages = totalPages,
+                CurrentPage = pageNumber,
+                PageSize = pageSize,
+                Items = items
+            };
+        }
+        private IQueryable<acompanante> ApplySorting(
+                IQueryable<acompanante> query,
+                string sortBy,
+                bool sortDesc)
+        {
+            switch (sortBy?.ToLower())
+            {
+                case "nombreperfil":
+                    return sortDesc
+                        ? query.OrderByDescending(a => a.nombre_perfil)
+                        : query.OrderBy(a => a.nombre_perfil);
+                case "edad":
+                    return sortDesc
+                        ? query.OrderByDescending(a => a.edad)
+                        : query.OrderBy(a => a.edad);
+                case "ciudad":
+                    return sortDesc
+                        ? query.OrderByDescending(a => a.ciudad)
+                        : query.OrderBy(a => a.ciudad);
+                case "tarifa":
+                    return sortDesc
+                        ? query.OrderByDescending(a => a.tarifa_base)
+                        : query.OrderBy(a => a.tarifa_base);
+                default:
+                    return sortDesc
+                        ? query.OrderByDescending(a => a.id)
+                        : query.OrderBy(a => a.id);
+            }
 
 
 
+
+
+        }
     }
 }

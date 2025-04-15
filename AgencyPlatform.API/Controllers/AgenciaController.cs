@@ -1,9 +1,12 @@
 ﻿using AgencyPlatform.Application.DTOs.Acompanantes;
 using AgencyPlatform.Application.DTOs.Agencias;
+using AgencyPlatform.Application.DTOs.Agencias.AgenciaDah;
 using AgencyPlatform.Application.DTOs.Anuncios;
 using AgencyPlatform.Application.DTOs.Estadisticas;
+using AgencyPlatform.Application.DTOs.Solicitudes;
 using AgencyPlatform.Application.DTOs.Verificaciones;
 using AgencyPlatform.Application.Interfaces.Services.Agencias;
+using AgencyPlatform.Shared.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -156,6 +159,90 @@ namespace AgencyPlatform.API.Controllers
             var estadisticas = await _agenciaService.GetEstadisticasPerfilAsync(acompananteId);
             return Ok(estadisticas);
         }
+       
+        [HttpGet("dashboard")]
+        public async Task<ActionResult<AgenciaDashboardDto>> GetDashboard()
+        {
+            try
+            {
+                int usuarioId = GetUsuarioId();
+                int agenciaId = await _agenciaService.GetAgenciaIdByUsuarioIdAsync(usuarioId);
+
+                if (agenciaId <= 0)
+                    return NotFound(new { mensaje = "No se encontró una agencia asociada a este usuario" });
+
+                var dashboard = await _agenciaService.GetDashboardAsync(agenciaId);
+                return Ok(dashboard);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(new { mensaje = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = ex.Message });
+            }
+        }
+        [HttpGet("independientes")]
+        public async Task<ActionResult<AcompanantesIndependientesResponseDto>> GetIndependientes(
+                [FromQuery] int pageNumber = 1,
+                [FromQuery] int pageSize = 10,
+                [FromQuery] string filterBy = null,
+                [FromQuery] string sortBy = "Id",
+                [FromQuery] bool sortDesc = false)
+                    {
+            try
+            {
+                var resultado = await _agenciaService.GetAcompanantesIndependientesAsync(
+                    pageNumber, pageSize, filterBy, sortBy, sortDesc);
+                return Ok(resultado);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = ex.Message });
+            }
+        }
+        [HttpGet("historial-solicitudes")]
+        public async Task<ActionResult<SolicitudesHistorialResponseDto>> GetHistorialSolicitudes(
+            [FromQuery] DateTime? fechaDesde = null,
+            [FromQuery] DateTime? fechaHasta = null,
+            [FromQuery] string estado = null,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                // Obtener ID de la agencia del usuario actual
+                int usuarioId = GetUsuarioId();
+                int agenciaId = await _agenciaService.GetAgenciaIdByUsuarioIdAsync(usuarioId);
+
+                if (agenciaId <= 0)
+                    return NotFound(new { mensaje = "No se encontró una agencia asociada a este usuario" });
+
+                var resultado = await _agenciaService.GetHistorialSolicitudesAsync(
+                    agenciaId, fechaDesde, fechaHasta, estado, pageNumber, pageSize);
+                return Ok(resultado);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = ex.Message });
+            }
+        }
+
+        //[HttpPut("solicitudes/{solicitudId}/cancelar")]
+        //public async Task<IActionResult> CancelarSolicitud(int solicitudId, [FromBody] CancelarSolicitudDto dto)
+        //{
+        //    try
+        //    {
+        //        int usuarioId = GetUsuarioId();
+        //        await _agenciaService.CancelarSolicitudAsync(solicitudId, usuarioId, dto.Motivo);
+        //        return Ok(new { mensaje = "Solicitud cancelada correctamente" });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(new { mensaje = ex.Message });
+        //    }
+        //}
 
 
 

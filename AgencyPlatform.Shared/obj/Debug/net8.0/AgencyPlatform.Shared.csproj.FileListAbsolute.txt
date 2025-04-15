@@ -1,13 +1,13 @@
 C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.Shared\bin\Debug\net8.0\AgencyPlatform.Shared.deps.json
 C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.Shared\bin\Debug\net8.0\AgencyPlatform.Shared.dll
 C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.Shared\bin\Debug\net8.0\AgencyPlatform.Shared.pdb
+C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.Shared\obj\Debug\net8.0\AgencyPlatform.Shared.csproj.AssemblyReference.cache
 C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.Shared\obj\Debug\net8.0\AgencyPlatform.Shared.GeneratedMSBuildEditorConfig.editorconfig
 C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.Shared\obj\Debug\net8.0\AgencyPlatform.Shared.AssemblyInfoInputs.cache
 C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.Shared\obj\Debug\net8.0\AgencyPlatform.Shared.AssemblyInfo.cs
 C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.Shared\obj\Debug\net8.0\AgencyPlatform.Shared.csproj.CoreCompileInputs.cache
+C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.Shared\obj\Debug\net8.0\AgencyPlatform.Shared.sourcelink.json
 C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.Shared\obj\Debug\net8.0\AgencyPlatform.Shared.dll
 C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.Shared\obj\Debug\net8.0\refint\AgencyPlatform.Shared.dll
 C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.Shared\obj\Debug\net8.0\AgencyPlatform.Shared.pdb
 C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.Shared\obj\Debug\net8.0\ref\AgencyPlatform.Shared.dll
-C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.Shared\obj\Debug\net8.0\AgencyPlatform.Shared.csproj.AssemblyReference.cache
-C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.Shared\obj\Debug\net8.0\AgencyPlatform.Shared.sourcelink.json

@@ -125,7 +125,6 @@ C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.API\o
 C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.API\obj\Debug\net8.0\AgencyPlatform.API.AssemblyInfoInputs.cache
 C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.API\obj\Debug\net8.0\AgencyPlatform.API.AssemblyInfo.cs
 C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.API\obj\Debug\net8.0\AgencyPlatform.API.csproj.CoreCompileInputs.cache
-C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.API\obj\Debug\net8.0\AgencyPlatform.API.MvcApplicationPartsAssemblyInfo.cs
 C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.API\obj\Debug\net8.0\AgencyPlatform.API.MvcApplicationPartsAssemblyInfo.cache
 C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.API\obj\Debug\net8.0\staticwebassets.build.json
 C:\Users\siric\OneDrive\Escritorio\PlataformaSokkaClone\src\AgencyPlatform.API\obj\Debug\net8.0\staticwebassets.development.json

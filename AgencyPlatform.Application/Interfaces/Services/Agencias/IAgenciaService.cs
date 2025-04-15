@@ -10,6 +10,8 @@ using AgencyPlatform.Application.DTOs.Estadisticas;
 using AgencyPlatform.Application.DTOs.Anuncios;
 using AgencyPlatform.Application.DTOs.Acompanantes;
 using AgencyPlatform.Application.DTOs.SolicitudesAgencia;
+using AgencyPlatform.Application.DTOs.Agencias.AgenciaDah;
+using AgencyPlatform.Application.DTOs.Solicitudes;
 
 namespace AgencyPlatform.Application.Interfaces.Services.Agencias
 {
@@ -54,6 +56,29 @@ namespace AgencyPlatform.Application.Interfaces.Services.Agencias
 
         Task EnviarSolicitudAsync(int agenciaId);
         Task<PerfilEstadisticasDto?> GetEstadisticasPerfilAsync(int acompananteId);
+
+        //nuevos Agregados
+
+        Task<AgenciaDashboardDto> GetDashboardAsync(int agenciaId);
+        Task<int> GetAgenciaIdByUsuarioIdAsync(int usuarioId);
+
+        Task<AcompanantesIndependientesResponseDto> GetAcompanantesIndependientesAsync(
+            int pageNumber = 1,
+            int pageSize = 10,
+            string filterBy = null,
+            string sortBy = "Id",
+            bool sortDesc = false);
+
+        Task<SolicitudesHistorialResponseDto> GetHistorialSolicitudesAsync(
+            int agenciaId,
+            DateTime? fechaDesde = null,
+            DateTime? fechaHasta = null,
+            string estado = null,
+            int pageNumber = 1,
+            int pageSize = 10);
+
+
+        Task CancelarSolicitudAsync(int solicitudId, int usuarioId, string motivo);
 
 
 

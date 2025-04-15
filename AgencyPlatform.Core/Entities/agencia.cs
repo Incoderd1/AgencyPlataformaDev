@@ -23,6 +23,8 @@ public partial class agencia
 
     public string? pais { get; set; }
 
+    public int puntosAgencia { get; set; } = 0; 
+
     public bool? esta_verificada { get; set; }
 
     public DateTime? fecha_verificacion { get; set; }

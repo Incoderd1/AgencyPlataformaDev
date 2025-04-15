@@ -14,6 +14,11 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AgencyPlatform.Application.DTOs.SolicitudesAgencia;
+using AgencyPlatform.Application.DTOs.Agencias.AgenciaDah;
+using AgencyPlatform.Shared.Exceptions;
+using AgencyPlatform.Application.Interfaces;
+using AgencyPlatform.Application.DTOs.Solicitudes;
+using AgencyPlatform.Infrastructure.Repositories;
 
 namespace AgencyPlatform.Infrastructure.Services.Agencias
 {
@@ -25,6 +30,10 @@ namespace AgencyPlatform.Infrastructure.Services.Agencias
         private readonly IAnuncioDestacadoRepository _anuncioRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IMapper _mapper;
+        private readonly ISolicitudAgenciaRepository _solicitudAgenciaRepository;
+        private readonly IComisionRepository _comisionRepository;
+        private readonly IUserRepository _usuarioRepository;
+
 
         public AgenciaService(
             IAgenciaRepository agenciaRepository,
@@ -32,7 +41,11 @@ namespace AgencyPlatform.Infrastructure.Services.Agencias
             IVerificacionRepository verificacionRepository,
             IAnuncioDestacadoRepository anuncioRepository,
             IHttpContextAccessor httpContextAccessor,
-            IMapper mapper)
+            IMapper mapper,
+            ISolicitudAgenciaRepository solicitudAgenciaRepository,
+            IComisionRepository comision,
+            IUserRepository usuarioRepository
+)
         {
             _agenciaRepository = agenciaRepository;
             _acompananteRepository = acompananteRepository;
@@ -40,6 +53,9 @@ namespace AgencyPlatform.Infrastructure.Services.Agencias
             _anuncioRepository = anuncioRepository;
             _httpContextAccessor = httpContextAccessor;
             _mapper = mapper;
+            _solicitudAgenciaRepository = solicitudAgenciaRepository;
+            _comisionRepository = comision;
+           _usuarioRepository = usuarioRepository;
         }
 
         public async Task<List<AgenciaDto>> GetAllAsync()
@@ -570,9 +586,252 @@ namespace AgencyPlatform.Infrastructure.Services.Agencias
 
             return await _acompananteRepository.GetEstadisticasPerfilAsync(acompananteId);
         }
+        public async Task<int> GetAgenciaIdByUsuarioIdAsync(int usuarioId)
+        {
+            var agencia = await _agenciaRepository.GetByUsuarioIdAsync(usuarioId);
+            return agencia?.id ?? 0;
+        }
+        public async Task<AgenciaDashboardDto> GetDashboardAsync(int agenciaId)
+        {
+            // Verificar que la agencia existe
+            var agencia = await _agenciaRepository.GetByIdAsync(agenciaId);
+            if (agencia == null)
+                throw new NotFoundException($"Agencia con id {agenciaId} no encontrada");
 
+            // Obtener contadores
+            var totalAcompanantes = await _acompananteRepository.CountByAgenciaIdAsync(agenciaId);
+            var totalVerificados = await _acompananteRepository.CountVerificadosByAgenciaIdAsync(agenciaId);
+            var pendientesVerificacion = totalAcompanantes - totalVerificados;
+            var solicitudesPendientes = await _solicitudAgenciaRepository.CountPendientesByAgenciaIdAsync(agenciaId);
+            var anunciosActivos = await _anuncioRepository.CountActivosByAgenciaIdAsync(agenciaId);
 
+            // Obtener comisiones del último mes
+            var fechaInicio = DateTime.Now.AddMonths(-1);
+            var fechaFin = DateTime.Now;
+            var comisiones = await _comisionRepository.GetByAgenciaIdAndFechasAsync(agenciaId, fechaInicio, fechaFin);
+            decimal comisionesTotal = comisiones.Sum(c => c.Monto);
 
+            // Obtener puntos acumulados de la agencia
+            var puntosAgencia = agencia.puntosAgencia;
+
+            // Obtener acompañantes destacados (los más visitados/contactados)
+            var acompanantesDestacados = await _acompananteRepository.GetDestacadosByAgenciaIdAsync(agenciaId, 5);
+            var acompanantesResumen = acompanantesDestacados.Select(a => new AcompananteResumenDto
+            {
+                Id = a.id,
+                NombrePerfil = a.nombre_perfil,
+                //FotoUrl = a.fotoUrl,
+                TotalVisitas = a.visitas_perfils.Count,
+                TotalContactos = a.contactos.Count
+            }).ToList();
+
+            return new AgenciaDashboardDto
+            {
+                TotalAcompanantes = totalAcompanantes,
+                TotalVerificados = totalVerificados,
+                PendientesVerificacion = pendientesVerificacion,
+                SolicitudesPendientes = solicitudesPendientes,
+                AnunciosActivos = anunciosActivos,
+                ComisionesUltimoMes = comisionesTotal,
+                PuntosAcumulados = puntosAgencia,
+                AcompanantesDestacados = acompanantesResumen
+            };
+        }
+
+        public async Task<AcompanantesIndependientesResponseDto> GetAcompanantesIndependientesAsync(
+                int pageNumber = 1,
+                int pageSize = 10,
+                string filterBy = null,
+                string sortBy = "Id",
+                bool sortDesc = false)
+        {
+            // Validación de parámetros
+            pageNumber = pageNumber < 1 ? 1 : pageNumber;
+            pageSize = pageSize < 1 ? 10 : (pageSize > 50 ? 50 : pageSize);
+
+            // Obtener acompañantes independientes paginados
+            var resultado = await _acompananteRepository.GetIndependientesAsync(
+                pageNumber, pageSize, filterBy, sortBy, sortDesc);
+
+            var items = new List<AcompananteIndependienteDto>();
+
+            foreach (var acompanante in resultado.Items)
+            {
+                // Obtener URL de la foto principal
+                string fotoUrl = "";
+                if (acompanante.fotos != null && acompanante.fotos.Any())
+                {
+                    var fotoPrincipal = acompanante.fotos.FirstOrDefault(f => f.es_principal == true);
+                    fotoUrl = fotoPrincipal?.url ?? "";
+                }
+
+                items.Add(new AcompananteIndependienteDto
+                {
+                    Id = acompanante.id,
+                    NombrePerfil = acompanante.nombre_perfil,
+                    Genero = acompanante.genero,
+                    Edad = acompanante.edad,
+                    Ciudad = acompanante.ciudad,
+                    Pais = acompanante.pais,
+                    FotoUrl = fotoUrl,
+                    TarifaBase = acompanante.tarifa_base,
+                    Moneda = acompanante.moneda,
+                    EstaVerificado = acompanante.esta_verificado
+                });
+            }
+
+            return new AcompanantesIndependientesResponseDto
+            {
+                TotalItems = resultado.TotalItems,
+                TotalPages = resultado.TotalPages,
+                CurrentPage = resultado.CurrentPage,
+                PageSize = resultado.PageSize,
+                Items = items
+            };
+        }
+        public async Task<SolicitudesHistorialResponseDto> GetHistorialSolicitudesAsync(
+    int agenciaId,
+    DateTime? fechaDesde = null,
+    DateTime? fechaHasta = null,
+    string estado = null,
+    int pageNumber = 1,
+    int pageSize = 10)
+        {
+            // Validación de parámetros
+            pageNumber = pageNumber < 1 ? 1 : pageNumber;
+            pageSize = pageSize < 1 ? 10 : (pageSize > 50 ? 50 : pageSize);
+
+            // Obtener solicitudes filtradas
+            var resultado = await _solicitudAgenciaRepository.GetHistorialAsync(
+                agenciaId, null, fechaDesde, fechaHasta, estado, pageNumber, pageSize);
+
+            var items = new List<SolicitudHistorialDto>();
+
+            foreach (var solicitud in resultado.Items)
+            {
+                // Obtener foto del acompañante
+                string fotoUrl = "";
+                if (solicitud.acompanante?.fotos != null && solicitud.acompanante.fotos.Any())
+                {
+                    var fotoPrincipal = solicitud.acompanante.fotos
+                        .FirstOrDefault(f => f.es_principal == true);
+                    fotoUrl = fotoPrincipal?.url ?? "";
+                }
+
+                items.Add(new SolicitudHistorialDto
+                {
+                    Id = solicitud.id,
+                    AcompananteId = solicitud.acompanante_id,
+                    NombreAcompanante = solicitud.acompanante?.nombre_perfil ?? "Desconocido",
+                    FotoAcompanante = fotoUrl,
+                    AgenciaId = solicitud.agencia_id,
+                    NombreAgencia = solicitud.agencia?.nombre ?? "Desconocido",
+                    FechaSolicitud = solicitud.fecha_solicitud,
+                    FechaRespuesta = solicitud.fecha_respuesta,
+                    Estado = solicitud.estado,
+                    MotivoRechazo = solicitud.motivo_rechazo,
+                    MotivoCancelacion = solicitud.motivo_cancelacion
+                });
+            }
+
+            return new SolicitudesHistorialResponseDto
+            {
+                TotalItems = resultado.TotalItems,
+                TotalPages = resultado.TotalPages,
+                CurrentPage = resultado.CurrentPage,
+                PageSize = resultado.PageSize,
+                Items = items
+            };
+        }
+
+        public Task CancelarSolicitudAsync(int solicitudId, int usuarioId, string motivo)
+        {
+            throw new NotImplementedException();
+        }
+
+        //public async Task CancelarSolicitudAsync(int solicitudId, int usuarioId, string motivo)
+        //{
+        //    // Obtener la solicitud
+        //    var solicitud = await _solicitudAgenciaRepository.GetByIdAsync(solicitudId);
+        //    if (solicitud == null)
+        //        throw new NotFoundException($"Solicitud con ID {solicitudId} no encontrada");
+
+        //    // Verificar que la solicitud esté en estado pendiente
+        //    if (solicitud.estado != "pendiente")
+        //        throw new InvalidOperationException("Solo se pueden cancelar solicitudes en estado pendiente");
+
+        //    // Verificar que el usuario tenga permisos para cancelar la solicitud
+        //    bool tienePermiso = false;
+
+        //    // Verificar si es administrador
+        //    var rolName = await _usuarioRepository.GetRolNameByUserIdAsync(usuarioId);
+        //    if (roles.Contains("admin"))
+        //    {
+        //        tienePermiso = true;
+        //    }
+        //    else
+        //    {
+        //        // Verificar si es la agencia destinataria
+        //        var agencia = await _agenciaRepository.GetByUsuarioIdAsync(usuarioId);
+        //        if (agencia != null && solicitud.agencia_id == agencia.id)
+        //        {
+        //            tienePermiso = true;
+        //        }
+        //        else
+        //        {
+        //            // Verificar si es el acompañante que hizo la solicitud
+        //            var acompanante = await _acompananteRepository.GetByUsuarioIdAsync(usuarioId);
+        //            if (acompanante != null && solicitud.acompanante_id == acompanante.id)
+        //            {
+        //                tienePermiso = true;
+        //            }
+        //        }
+        //    }
+
+        //    // Si no tiene permisos, lanzar excepción
+        //    if (!tienePermiso)
+        //        throw new UnauthorizedAccessException("No tienes permisos para cancelar esta solicitud");
+
+        //    // Actualizar la solicitud
+        //    solicitud.estado = "cancelada";
+        //    solicitud.motivo_cancelacion = motivo;
+        //    solicitud.fecha_respuesta = DateTime.UtcNow;
+
+        //    // Guardar cambios
+        //    await _solicitudAgenciaRepository.UpdateAsync(solicitud);
+        //    await _solicitudAgenciaRepository.SaveChangesAsync();
+
+        //    // Si tienes un sistema de notificaciones, notificar a las partes involucradas
+        //    try
+        //    {
+        //        // Notificar a la agencia
+        //        if (solicitud.agencia?.usuario_id != null)
+        //        {
+        //            // Aquí iría el código para enviar notificación a la agencia
+        //            // Por ejemplo:
+        //            // await _notificacionService.EnviarNotificacion(
+        //            //     solicitud.agencia.usuario_id.Value,
+        //            //     "Solicitud cancelada",
+        //            //     $"La solicitud de {solicitud.acompanante?.nombre_perfil ?? "un acompañante"} ha sido cancelada.");
+        //        }
+
+        //        // Notificar al acompañante
+        //        if (solicitud.acompanante?.usuario_id != null)
+        //        {
+        //            // Aquí iría el código para enviar notificación al acompañante
+        //            // Por ejemplo:
+        //            // await _notificacionService.EnviarNotificacion(
+        //            //     solicitud.acompanante.usuario_id.Value,
+        //            //     "Solicitud cancelada",
+        //            //     $"Tu solicitud a {solicitud.agencia?.nombre ?? "una agencia"} ha sido cancelada.");
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // Loguear el error pero no detener el proceso
+        //        Console.WriteLine($"Error al enviar notificaciones: {ex.Message}");
+        //    }
+        //}
 
 
     }

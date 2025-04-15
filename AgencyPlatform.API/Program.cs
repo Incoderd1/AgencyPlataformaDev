@@ -98,6 +98,11 @@ builder.Services.AddScoped<IIntentoLoginRepository, IntentoLoginRepository>();
 builder.Services.AddScoped<IAcompananteService, AcompananteService>();
 builder.Services.AddScoped<IAcompananteRepository, AcompananteRepository>();
 
+builder.Services.AddScoped<ISolicitudAgenciaRepository, SolicitudAgenciaRepository>();
+builder.Services.AddScoped<ISolicitudAgenciaRepository, SolicitudAgenciaRepository>();
+
+
+
 // En Program.cs o Startup.cs
 builder.Services.AddScoped<IFotoRepository, FotoRepository>();
 builder.Services.AddScoped<IServicioRepository, ServicioRepository>();
@@ -118,6 +123,14 @@ builder.Services.AddScoped<IArchivosService, ArchivosService>();
 
 // DTO para registro de contactos
 builder.Services.AddScoped<RegistrarContactoDto>();
+
+builder.Services.AddScoped<IAgenciaRepository, AgenciaRepository>();
+builder.Services.AddScoped<IAcompananteRepository, AcompananteRepository>();
+builder.Services.AddScoped<ISolicitudAgenciaRepository, SolicitudAgenciaRepository>();
+builder.Services.AddScoped<IAnuncioDestacadoRepository, AnuncioDestacadoRepository>();
+builder.Services.AddScoped<IComisionRepository, ComisionRepository>();
+
+
 
 
 

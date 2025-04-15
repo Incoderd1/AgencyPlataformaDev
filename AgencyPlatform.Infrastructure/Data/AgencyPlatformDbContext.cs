@@ -91,6 +91,12 @@ public partial class AgencyPlatformDbContext : DbContext
     public virtual DbSet<SolicitudAgencia> SolicitudAgencias { get; set; }
 
 
+    public virtual DbSet<Comision> Comisiones { get; set; }
+    public DbSet<solicitud_agencia> solicitud_agencias { get; set; } // Cambiado a plural
+
+
+
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=PlataformaAgencia;Username=postgres;Password=C123456");
@@ -106,6 +112,41 @@ public partial class AgencyPlatformDbContext : DbContext
             entity.Property(e => e.email).HasMaxLength(255);
             entity.Property(e => e.ip_address).HasMaxLength(50);
             entity.Property(e => e.created_at).HasDefaultValueSql("CURRENT_TIMESTAMP");
+        });
+        modelBuilder.Entity<solicitud_agencia>(entity =>
+        {
+            entity.ToTable("solicitud_agencia");
+
+            entity.HasKey(e => e.id);
+
+            entity.Property(e => e.estado)
+                .IsRequired()
+                .HasDefaultValue("pendiente");
+
+            entity.Property(e => e.fecha_solicitud)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.Property(e => e.created_at)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.Property(e => e.updated_at)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            // Configurar relación con acompanante
+            entity.HasOne(e => e.acompanante)
+                .WithMany()
+                .HasForeignKey(e => e.acompanante_id)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Configurar relación con agencia
+            entity.HasOne(e => e.agencia)
+                .WithMany()
+                .HasForeignKey(e => e.agencia_id)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Índice único para evitar solicitudes duplicadas
+            entity.HasIndex(e => new { e.acompanante_id, e.agencia_id, e.estado })
+                .IsUnique();
         });
 
 
@@ -236,10 +277,60 @@ public partial class AgencyPlatformDbContext : DbContext
             entity.Property(e => e.pais).HasMaxLength(100);
             entity.Property(e => e.sitio_web).HasMaxLength(255);
             entity.Property(e => e.updated_at).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.puntosAgencia).HasColumnName("puntos_acumulados");
 
             entity.HasOne(d => d.usuario).WithOne(p => p.agencia)
                 .HasForeignKey<agencia>(d => d.usuario_id)
                 .HasConstraintName("agencias_usuario_id_fkey");
+     
+        });
+
+        modelBuilder.Entity<Comision>(entity =>
+        {
+            // Configuración de la tabla con esquema
+            entity.ToTable("comisiones", "plataforma");
+
+            // Clave primaria
+            entity.HasKey(c => c.Id);
+
+            // Propiedades
+            entity.Property(c => c.Id)
+                  .HasColumnName("Id")
+                  .ValueGeneratedOnAdd(); // Auto-incremental
+
+            entity.Property(c => c.AgenciaId)
+                  .HasColumnName("AgenciaId")
+                  .IsRequired();
+
+            entity.Property(c => c.Monto)
+                  .HasColumnName("Monto")
+                  .HasColumnType("numeric(18,2)")
+                  .IsRequired();
+
+            entity.Property(c => c.Concepto)
+                  .HasColumnName("Concepto")
+                  .HasColumnType("text");
+
+            entity.Property(c => c.Referencia)
+                  .HasColumnName("Referencia")
+                  .HasColumnType("text");
+
+            entity.Property(c => c.Fecha)
+                  .HasColumnName("Fecha")
+                  .HasColumnType("timestamp without time zone")
+                  .IsRequired();
+
+            entity.Property(c => c.CreatedAt)
+                  .HasColumnName("CreatedAt")
+                  .HasColumnType("timestamp without time zone")
+                  .IsRequired();
+
+            // Relación con Agencia
+            entity.HasOne(c => c.Agencia)
+                  .WithMany() // Si Agencia no tiene colección de Comisiones, déjalo vacío
+                  .HasForeignKey(c => c.AgenciaId)
+                  .HasConstraintName("FK_Comisiones_Agencias_AgenciaId")
+                  .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<anuncios_destacado>(entity =>

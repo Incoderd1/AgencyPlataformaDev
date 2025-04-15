@@ -188,6 +188,14 @@ namespace AgencyPlatform.Infrastructure.Repositories
 
             return (usuarios, total);
         }
+        public async Task<string> GetRolNameByUserIdAsync(int usuarioId)
+        {
+            var usuario = await _context.usuarios
+                .Include(u => u.rol)
+                .FirstOrDefaultAsync(u => u.id == usuarioId);
+
+            return usuario?.rol?.nombre;
+        }
     }
 }
 
