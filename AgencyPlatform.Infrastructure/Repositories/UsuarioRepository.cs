@@ -50,6 +50,12 @@ namespace AgencyPlatform.Infrastructure.Repositories
         {
             return await _context.usuarios.FindAsync(id);
         }
+        
+
+        public Task<string> GetRolNameByUserIdAsync(int usuarioId)
+        {
+            throw new NotImplementedException();
+        }
         public async Task<List<string>> GetRolesAsync(int usuarioId)
         {
             var usuario = await _context.usuarios
@@ -60,11 +66,6 @@ namespace AgencyPlatform.Infrastructure.Repositories
                 return new List<string>();
 
             return new List<string> { usuario.rol.nombre };
-        }
-
-        public Task<string> GetRolNameByUserIdAsync(int usuarioId)
-        {
-            throw new NotImplementedException();
         }
     }
 }

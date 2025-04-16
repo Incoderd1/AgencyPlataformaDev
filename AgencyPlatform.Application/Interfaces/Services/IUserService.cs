@@ -19,30 +19,34 @@ namespace AgencyPlatform.Application.Interfaces.Services
         Task<List<usuario>> GetAllUsersAsync();
         Task UpdateUserAsync(int id, string email, string? phone, bool estaActivo);
         Task DeleteUserAsync(int id);
+        Task NotificarAdminDeSolicitudAgenciaAsync();
+
 
 
         //Acompanantes
 
         // Nuevo método para registro combinado de usuario y acompañante
+        // Nuevo método para registro combinado de usuario y acompañante
         Task<(usuario Usuario, int AcompananteId)> RegisterUserAcompananteAsync(
-            string email,
-            string password,
-            string? phone,
-            string nombrePerfil,
-            string genero,
-            int edad,
-            string? descripcion = null,
-            int? altura = null,
-            int? peso = null,
-            string? ciudad = null,
-            string? pais = null,
-            string? idiomas = null,
-            string? disponibilidad = null,
-            decimal? tarifaBase = null,
-            string? moneda = "USD",
-            List<int>? categoriaIds = null,
-            string? telefono = null,
-            string? whatsapp = null,
-            string? emailContacto = null);
+        string email,
+        string password,
+        string telefono,            // ← viene desde el mismo WhatsApp
+        string nombrePerfil,
+        string genero,
+        int edad,
+        string? descripcion = null,
+        string? ciudad = null,
+        string? pais = null,
+        string? disponibilidad = "Horario flexible",
+        decimal? tarifaBase = null,
+        string? moneda = "USD",               // oculto, siempre "USD"
+        List<int>? categoriaIds = null,
+        string? whatsapp = null,
+        string? emailContacto = null,
+        int altura = 160,                     // oculto, fijo
+        int peso = 60,                        // oculto, fijo
+        string idiomas = "Español"           // oculto, fijo
+    );
+
     }
 }

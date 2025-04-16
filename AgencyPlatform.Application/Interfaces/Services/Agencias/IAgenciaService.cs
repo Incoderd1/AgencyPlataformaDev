@@ -12,6 +12,8 @@ using AgencyPlatform.Application.DTOs.Acompanantes;
 using AgencyPlatform.Application.DTOs.SolicitudesAgencia;
 using AgencyPlatform.Application.DTOs.Agencias.AgenciaDah;
 using AgencyPlatform.Application.DTOs.Solicitudes;
+using AgencyPlatform.Application.DTOs.SolicitudesRegistroAgencia;
+using AgencyPlatform.Application.DTOs.Verificacion;
 
 namespace AgencyPlatform.Application.Interfaces.Services.Agencias
 {
@@ -81,7 +83,20 @@ namespace AgencyPlatform.Application.Interfaces.Services.Agencias
         Task CancelarSolicitudAsync(int solicitudId, int usuarioId, string motivo);
 
 
+        Task<agencia> CrearPendienteAsync(CrearAgenciaDto dto);
 
+
+        Task<int> SolicitarRegistroAgenciaAsync(CrearSolicitudRegistroAgenciaDto dto);
+        Task<List<SolicitudRegistroAgenciaDto>> GetSolicitudesRegistroPendientesAsync();
+        Task<bool> AprobarSolicitudRegistroAgenciaAsync(int solicitudId);
+        Task<bool> RechazarSolicitudRegistroAgenciaAsync(int solicitudId, string motivo);
+
+
+        Task<PuntosAgenciaDto> GetPuntosAgenciaAsync(int agenciaId);
+        Task<int> OtorgarPuntosAgenciaAsync(OtorgarPuntosAgenciaDto dto);
+        Task<bool> GastarPuntosAgenciaAsync(int agenciaId, int puntos, string concepto);
+
+        Task<List<VerificacionDto>> VerificarAcompanantesLoteAsync(VerificacionLoteDto dto);
 
 
     }

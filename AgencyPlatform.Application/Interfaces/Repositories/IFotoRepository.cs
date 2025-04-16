@@ -16,5 +16,6 @@ namespace AgencyPlatform.Application.Interfaces.Repositories
         Task DeleteAsync(foto entity);
         Task SaveChangesAsync();
         Task QuitarFotosPrincipalesAsync(int acompananteId);
+        Task<int> ContarFotosPorAcompananteAsync(int acompananteId); 
     }
 }

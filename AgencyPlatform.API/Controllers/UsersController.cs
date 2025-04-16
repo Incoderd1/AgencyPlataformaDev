@@ -1,4 +1,5 @@
 ﻿using AgencyPlatform.Application.DTOs;
+using AgencyPlatform.Application.DTOs.Agencias;
 using AgencyPlatform.Application.DTOs.Usuarios;
 using AgencyPlatform.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -14,10 +15,12 @@ namespace AgencyPlatform.API.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly IEmailSender _emailSender; // Inyectamos IEmailSender
 
-        public UsersController(IUserService userService)
+        public UsersController(IUserService userService, IEmailSender emailSender)
         {
             _userService = userService;
+            _emailSender = emailSender;
         }
 
         // ============================================================
@@ -45,6 +48,7 @@ namespace AgencyPlatform.API.Controllers
             }
         }
 
+       
         // ============================================================
         // 🟦 GET: Obtener usuario por ID
         // ============================================================
@@ -138,7 +142,7 @@ namespace AgencyPlatform.API.Controllers
         // ============================================================
         // 🟦 POST: Registrar usuario
         // ============================================================
-      
+
         [HttpPost("register")]
         [AllowAnonymous] // Permitir acceso sin autenticación
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
@@ -152,7 +156,7 @@ namespace AgencyPlatform.API.Controllers
                     request.Email,
                     request.Password,
                     request.TipoUsuario
-                  
+
                 );
 
                 return CreatedAtAction(nameof(GetById), new { id = user.id }, new
@@ -277,9 +281,8 @@ namespace AgencyPlatform.API.Controllers
 
         // ============================================================
         // 🟦 POST: Registrar usuario acompañante
-        // ============================================================
         [HttpPost("register-acompanante")]
-        [AllowAnonymous] // Permitir acceso sin autenticación
+        [AllowAnonymous]
         public async Task<IActionResult> RegisterAcompanante([FromBody] RegisterAcompananteRequest request)
         {
             try
@@ -289,28 +292,45 @@ namespace AgencyPlatform.API.Controllers
                     string.IsNullOrWhiteSpace(request.NombrePerfil) ||
                     string.IsNullOrWhiteSpace(request.Genero) ||
                     request.Edad < 18)
+                {
                     return BadRequest(new { Message = "Todos los campos obligatorios deben ser completados correctamente." });
+                }
 
-                var (user, acompananteId) = await _userService.RegisterUserAcompananteAsync(
-                    request.Email,
-                    request.Password,
-                    request.Telefono,
-                    request.NombrePerfil,
-                    request.Genero,
-                    request.Edad,
-                    request.Descripcion,
-                    request.Altura,
-                    request.Peso,
-                    request.Ciudad,
-                    request.Pais,
-                    request.Idiomas,
-                    request.Disponibilidad,
-                    request.TarifaBase,
-                    request.Moneda,
-                    request.CategoriaIds,
-                    request.Telefono,
-                    request.WhatsApp
+                // Valores ocultos y por defecto
+                string disponibilidad = string.IsNullOrWhiteSpace(request.Disponibilidad)
+                    ? "Horario flexible"
+                    : request.Disponibilidad;
+
+                string moneda = "USD"; // Fijo
+                int altura = 160;
+                int peso = 60;
+                string idiomas = "Español";
+                string telefono = request.WhatsApp;
+
+                // Especifica los tipos explícitamente para evitar problemas de inferencia
+                var resultado = await _userService.RegisterUserAcompananteAsync(
+                    email: request.Email,
+                    password: request.Password,
+                    telefono: telefono,
+                    nombrePerfil: request.NombrePerfil,
+                    genero: request.Genero,
+                    edad: request.Edad,
+                    descripcion: request.Descripcion,
+                    ciudad: request.Ciudad,
+                    pais: request.Pais,
+                    disponibilidad: disponibilidad,
+                    tarifaBase: request.TarifaBase,
+                    moneda: moneda,
+                    categoriaIds: request.CategoriaIds,
+                    whatsapp: request.WhatsApp,
+                    altura: altura,
+                    peso: peso,
+                    idiomas: idiomas
                 );
+
+                // Usa la tupla devuelta correctamente
+                var user = resultado.Usuario;
+                var acompananteId = resultado.AcompananteId;
 
                 return CreatedAtAction(nameof(GetById), new { id = user.id }, new
                 {
@@ -330,58 +350,50 @@ namespace AgencyPlatform.API.Controllers
                 Console.WriteLine($"🔹 Mensaje: {ex.Message}");
                 Console.WriteLine($"🔹 StackTrace: {ex.StackTrace}");
 
-                return BadRequest(new
-                {
-                    Message = ex.Message
-                    // StackTrace = ex.StackTrace // Comentado para producción
-                });
+                return BadRequest(new { Message = ex.Message });
             }
         }
-
-
-        public class RegisterAcompananteRequest
-        {
-            [Required]
-            [EmailAddress]
-            public string Email { get; set; }
-
-            [Required]
-            public string Password { get; set; }
-
-            public string? Telefono { get; set; }
-
-            [Required]
-            public string NombrePerfil { get; set; }
-
-            [Required]
-            public string Genero { get; set; }
-
-            [Required]
-            [Range(18, 99)]
-            public int Edad { get; set; }
-
-            public string? Descripcion { get; set; }
-
-            public int? Altura { get; set; }
-
-            public int? Peso { get; set; }
-
-            public string? Ciudad { get; set; }
-
-            public string? Pais { get; set; }
-
-            public string? Idiomas { get; set; }
-
-            public string? Disponibilidad { get; set; }
-
-            public decimal? TarifaBase { get; set; }
-
-            public string? Moneda { get; set; } = "USD";
-
-            public List<int>? CategoriaIds { get; set; }
-
-            public string? WhatsApp { get; set; }
-
-        }
     }
+
+    public class RegisterAcompananteRequest
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; }
+
+        [Required]
+        public string Password { get; set; }
+
+        [Required]
+        public string WhatsApp { get; set; }
+
+        [Required]
+        public string NombrePerfil { get; set; }
+
+        [Required]
+        public string Genero { get; set; }
+
+        [Required]
+        [Range(18, 99)]
+        public int Edad { get; set; }
+
+        public string? Descripcion { get; set; }
+
+        public string? Ciudad { get; set; }
+
+        public string? Pais { get; set; }
+
+        public string? Disponibilidad { get; set; }
+
+        [Required]
+        public decimal TarifaBase { get; set; }
+
+        [Required]
+        public List<int> CategoriaIds { get; set; }
+
+
+    }
+
+
+
 }

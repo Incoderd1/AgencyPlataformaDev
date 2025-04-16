@@ -34,6 +34,12 @@ public partial class agencia
     public DateTime? created_at { get; set; }
 
     public DateTime? updated_at { get; set; }
+    public string? email { get; set; }  // Esta es la nueva columna
+    public int puntos_gastados { get; set; }
+    public int puntos_acumulados { get; set; }
+
+
+
 
     public virtual ICollection<acompanante> acompanantes { get; set; } = new List<acompanante>();
 

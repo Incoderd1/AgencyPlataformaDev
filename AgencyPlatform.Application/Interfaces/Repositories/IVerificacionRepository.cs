@@ -27,5 +27,8 @@ namespace AgencyPlatform.Application.Interfaces.Repositories
         Task<List<verificacione>> GetVerificacionesByAgenciaIdAsync(int agenciaId);
         Task<List<verificacione>> GetVerificacionesByPeriodoAsync(DateTime fechaInicio, DateTime fechaFin);
         Task DeleteVerificacionesByAgenciaIdAsync(int agenciaId);
+
+        Task<List<verificacione>> GetHistorialVerificacionesAsync(int acompananteId);
+
     }
 }

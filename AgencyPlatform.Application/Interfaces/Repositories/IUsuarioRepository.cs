@@ -19,9 +19,10 @@ namespace AgencyPlatform.Application.Interfaces.Repositories
         Task GuardarCambiosAsync();
         Task<usuario> GetByIdAsync(int id);
 
-        Task<List<string>> GetRolesAsync(int usuarioId);
 
         Task<string> GetRolNameByUserIdAsync(int usuarioId);
+
+        Task<List<string>> GetRolesAsync(int usuarioId);
 
 
     }

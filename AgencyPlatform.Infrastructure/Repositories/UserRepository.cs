@@ -196,6 +196,22 @@ namespace AgencyPlatform.Infrastructure.Repositories
 
             return usuario?.rol?.nombre;
         }
+        public async Task<List<string>> GetRolesAsync(int usuarioId)
+        {
+            var usuario = await _context.usuarios
+                .Include(u => u.rol)
+                .FirstOrDefaultAsync(u => u.id == usuarioId);
+
+            if (usuario == null || usuario.rol == null)
+                return new List<string>();
+
+            return new List<string> { usuario.rol.nombre };
+        }
+
+        public Task<IEnumerable<usuario>> GetUsersByRoleAsync(string role)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
 

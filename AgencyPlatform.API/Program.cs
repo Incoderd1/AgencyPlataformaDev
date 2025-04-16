@@ -23,8 +23,19 @@ using AgencyPlatform.Application.Interfaces.Services.Categoria;
 using AgencyPlatform.Infrastructure.Services.Categoria;
 using AgencyPlatform.Application.Interfaces.Repositories.Archivos;
 using AgencyPlatform.Application.DTOs;
+using AgencyPlatform.Application.Authorization.Requirements;
+using AgencyPlatform.Infrastructure.Authorization;
+using Microsoft.AspNetCore.Authorization;
+using QuestPDF.Infrastructure;
+using AgencyPlatform.API.Hubs;
+using AgencyPlatform.API.Utils;
+using AgencyPlatform.Application.Interfaces.Utils;
+using AgencyPlatform.Application.Interfaces.Services.PagoVerificacion;
+using AgencyPlatform.Infrastructure.Services.PagoVerificacion;
 
 var builder = WebApplication.CreateBuilder(args);
+QuestPDF.Settings.License = LicenseType.Community;
+
 
 // 📦 Cargar configuración JWT
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -45,6 +56,7 @@ builder.Services.AddAuthentication(options =>
     {
         OnMessageReceived = context =>
         {
+            // Para API REST
             var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
 
             // Si el encabezado existe pero no comienza con "Bearer "
@@ -53,6 +65,16 @@ builder.Services.AddAuthentication(options =>
             {
                 // Establecer directamente el token para la validación
                 context.Token = authHeader;
+            }
+
+            // Para SignalR - permitir token en query string
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+
+            if (!string.IsNullOrEmpty(accessToken) &&
+                path.StartsWithSegments("/api/hubs"))
+            {
+                context.Token = accessToken;
             }
 
             return Task.CompletedTask;
@@ -85,7 +107,6 @@ builder.Services.AddFluentValidationClientsideAdapters();
 
 //builder.Services.AddAutoMapper(typeof(AgenciasProfile).Assembly);
 builder.Services.AddAutoMapper(typeof(AgenciasProfile).Assembly);
-
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 // Registrar repositorios
@@ -94,68 +115,69 @@ builder.Services.AddScoped<IAcompananteRepository, AcompananteRepository>();
 builder.Services.AddScoped<IVerificacionRepository, VerificacionRepository>();
 builder.Services.AddScoped<IAnuncioDestacadoRepository, AnuncioDestacadoRepository>();
 builder.Services.AddScoped<IIntentoLoginRepository, IntentoLoginRepository>();
+builder.Services.AddScoped<ISolicitudAgenciaRepository, SolicitudAgenciaRepository>();
+builder.Services.AddScoped<IComisionRepository, ComisionRepository>();
 
+// Registrar servicios
 builder.Services.AddScoped<IAcompananteService, AcompananteService>();
-builder.Services.AddScoped<IAcompananteRepository, AcompananteRepository>();
+builder.Services.AddScoped<IAgenciaService, AgenciaService>();
+builder.Services.AddScoped<ICategoriaService, CategoriaService>();
+builder.Services.AddScoped<IArchivosService, ArchivosService>();
+builder.Services.AddScoped<IPagoVerificacionService, PagoVerificacionService>();
 
-builder.Services.AddScoped<ISolicitudAgenciaRepository, SolicitudAgenciaRepository>();
-builder.Services.AddScoped<ISolicitudAgenciaRepository, SolicitudAgenciaRepository>();
 
-
-
-// En Program.cs o Startup.cs
+// Repositorios adicionales
 builder.Services.AddScoped<IFotoRepository, FotoRepository>();
 builder.Services.AddScoped<IServicioRepository, ServicioRepository>();
 builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
 builder.Services.AddScoped<IVisitaRepository, VisitaRepository>();
 builder.Services.AddScoped<IContactoRepository, ContactoRepository>();
-
 builder.Services.AddScoped<IVisitaPerfilRepository, VisitaPerfilRepository>();
-builder.Services.AddScoped<IContactoRepository, ContactoRepository>();
-builder.Services.AddScoped<IFotoRepository, FotoRepository>();
-builder.Services.AddScoped<IServicioRepository, ServicioRepository>();
-
-// Servicios
-builder.Services.AddScoped<IArchivosService, ArchivosService>();
-
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
-builder.Services.AddScoped<IArchivosService, ArchivosService>();
+builder.Services.AddScoped<ISolicitudRegistroAgenciaRepository, SolicitudRegistroAgenciaRepository>();
+// En Startup.cs o el lugar donde configuras tus servicios
+builder.Services.AddScoped<IPagoVerificacionRepository, PagoVerificacionRepository>();
+
+
+// Notificaciones
+builder.Services.AddScoped<INotificadorRealTime, NotificadorSignalR>();
 
 // DTO para registro de contactos
 builder.Services.AddScoped<RegistrarContactoDto>();
 
-builder.Services.AddScoped<IAgenciaRepository, AgenciaRepository>();
-builder.Services.AddScoped<IAcompananteRepository, AcompananteRepository>();
-builder.Services.AddScoped<ISolicitudAgenciaRepository, SolicitudAgenciaRepository>();
-builder.Services.AddScoped<IAnuncioDestacadoRepository, AnuncioDestacadoRepository>();
-builder.Services.AddScoped<IComisionRepository, ComisionRepository>();
-
-
-
-
-
-// Registrar servicios
-builder.Services.AddScoped<IAgenciaService, AgenciaService>();
-// Registrar repositorios
-builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
-
-// Registrar servicios
-builder.Services.AddScoped<ICategoriaService, CategoriaService>();
-
 // Agregar HttpContextAccessor para acceder al usuario actual
 builder.Services.AddHttpContextAccessor();
+
+// Configurar SignalR con opciones
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = builder.Environment.IsDevelopment();
+    options.MaximumReceiveMessageSize = 102400; // 100 KB
+});
 
 // 🌐 CORS (permitir frontend local)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontendDev", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
+        policy.WithOrigins(
+            "http://localhost:5173",
+            "http://127.0.0.1:5500"
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials();
     });
 });
+
+// Políticas de autorización
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AgenciaOwnerOnly", policy =>
+        policy.Requirements.Add(new EsDuenoAgenciaRequirement()));
+});
+
+builder.Services.AddScoped<IAuthorizationHandler, EsDuenoAgenciaHandler>();
 
 // 🧪 Swagger con JWT
 builder.Services.AddSwaggerGen(options =>
@@ -198,6 +220,9 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 
 var app = builder.Build();
+
+// Mapear el hub de SignalR (solo una ruta)
+app.MapHub<NotificacionesHub>("/api/Hubs/notificaciones");
 
 // 🧰 Middleware
 if (app.Environment.IsDevelopment())

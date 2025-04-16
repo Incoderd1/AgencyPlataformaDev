@@ -4,6 +4,7 @@ using AgencyPlatform.Application.DTOs.Anuncios;
 using AgencyPlatform.Application.DTOs.Categoria;
 using AgencyPlatform.Application.DTOs.Foto;
 using AgencyPlatform.Application.DTOs.Servicio;
+using AgencyPlatform.Application.DTOs.SolicitudesRegistroAgencia;
 using AgencyPlatform.Application.DTOs.Verificaciones;
 using AgencyPlatform.Core.Entities;
 using AutoMapper;
@@ -130,6 +131,34 @@ namespace AgencyPlatform.Infrastructure.Mappers
                     .ForMember(dest => dest.MontoPagado, opt => opt.MapFrom(src => src.monto_pagado))
                     .ForMember(dest => dest.CuponId, opt => opt.MapFrom(src => src.cupon_id))
                     .ForMember(dest => dest.EstaActivo, opt => opt.MapFrom(src => src.esta_activo == true));
-            }
+
+            CreateMap<solicitud_registro_agencia, SolicitudRegistroAgenciaDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.id))
+                .ForMember(dest => dest.Nombre, opt => opt.MapFrom(src => src.nombre))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.email))
+                .ForMember(dest => dest.Descripcion, opt => opt.MapFrom(src => src.descripcion))
+                .ForMember(dest => dest.LogoUrl, opt => opt.MapFrom(src => src.logo_url))
+                .ForMember(dest => dest.SitioWeb, opt => opt.MapFrom(src => src.sitio_web))
+                .ForMember(dest => dest.Direccion, opt => opt.MapFrom(src => src.direccion))
+                .ForMember(dest => dest.Ciudad, opt => opt.MapFrom(src => src.ciudad))
+                .ForMember(dest => dest.Pais, opt => opt.MapFrom(src => src.pais))
+                .ForMember(dest => dest.FechaSolicitud, opt => opt.MapFrom(src => src.fecha_solicitud))
+                .ForMember(dest => dest.FechaRespuesta, opt => opt.MapFrom(src => src.fecha_respuesta))
+                .ForMember(dest => dest.Estado, opt => opt.MapFrom(src => src.estado))
+                .ForMember(dest => dest.MotivoRechazo, opt => opt.MapFrom(src => src.motivo_rechazo));
+            // En tu perfil de AutoMapper
+            CreateMap<pago_verificacion, PagoVerificacionDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.id))
+                .ForMember(dest => dest.VerificacionId, opt => opt.MapFrom(src => src.verificacion_id))
+                .ForMember(dest => dest.AcompananteId, opt => opt.MapFrom(src => src.acompanante_id))
+                .ForMember(dest => dest.AgenciaId, opt => opt.MapFrom(src => src.agencia_id))
+                .ForMember(dest => dest.Monto, opt => opt.MapFrom(src => src.monto))
+                .ForMember(dest => dest.Moneda, opt => opt.MapFrom(src => src.moneda))
+                .ForMember(dest => dest.MetodoPago, opt => opt.MapFrom(src => src.metodo_pago))
+                .ForMember(dest => dest.ReferenciaPago, opt => opt.MapFrom(src => src.referencia_pago))
+                .ForMember(dest => dest.Estado, opt => opt.MapFrom(src => src.estado))
+                .ForMember(dest => dest.FechaPago, opt => opt.MapFrom(src => src.fecha_pago));
+
+        }
         }
     }

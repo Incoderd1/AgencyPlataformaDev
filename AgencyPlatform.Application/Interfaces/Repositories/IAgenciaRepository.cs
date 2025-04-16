@@ -51,6 +51,9 @@ namespace AgencyPlatform.Application.Interfaces.Repositories
 
         Task UpdateSolicitudAsync(SolicitudAgencia solicitud);
 
+        Task AddMovimientoPuntosAsync(movimientos_puntos_agencia movimiento);
+        Task<List<movimientos_puntos_agencia>> GetUltimosMovimientosPuntosAsync(int agenciaId, int cantidad = 10);
+
 
 
     }

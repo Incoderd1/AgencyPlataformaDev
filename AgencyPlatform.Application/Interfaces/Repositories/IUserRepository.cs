@@ -41,6 +41,8 @@ namespace AgencyPlatform.Application.Interfaces.Repositories
 
         // Métodos para paginación
         Task<(List<usuario> Usuarios, int Total)> GetAllPagedAsync(int pagina, int elementosPorPagina);
+        Task<List<string>> GetRolesAsync(int usuarioId); // 🔥 Agregar esta línea
+        Task<IEnumerable<usuario>> GetUsersByRoleAsync(string role);
 
     }
 }

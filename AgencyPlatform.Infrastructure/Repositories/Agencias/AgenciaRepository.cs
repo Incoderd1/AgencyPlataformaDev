@@ -237,6 +237,21 @@ namespace AgencyPlatform.Infrastructure.Repositories
         {
             _context.SolicitudAgencias.Update(solicitud);
         }
+        public async Task AddMovimientoPuntosAsync(movimientos_puntos_agencia movimiento)
+        {
+            movimiento.fecha = DateTime.UtcNow;
+            movimiento.created_at = DateTime.UtcNow;
+            await _context.MovimientosPuntosAgencia.AddAsync(movimiento);
+        }
+
+        public async Task<List<movimientos_puntos_agencia>> GetUltimosMovimientosPuntosAsync(int agenciaId, int cantidad = 10)
+        {
+            return await _context.MovimientosPuntosAgencia
+                .Where(m => m.agencia_id == agenciaId)
+                .OrderByDescending(m => m.fecha)
+                .Take(cantidad)
+                .ToListAsync();
+        }
 
     }
 }

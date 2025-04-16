@@ -94,6 +94,13 @@ public partial class AgencyPlatformDbContext : DbContext
     public virtual DbSet<Comision> Comisiones { get; set; }
     public DbSet<solicitud_agencia> solicitud_agencias { get; set; } // Cambiado a plural
 
+    public DbSet<solicitud_registro_agencia> SolicitudesRegistroAgencia { get; set; }
+
+    public DbSet<movimientos_puntos_agencia> MovimientosPuntosAgencia { get; set; }
+
+    public DbSet<pago_verificacion> PagosVerificacion { get; set; }
+
+
 
 
 
@@ -112,6 +119,76 @@ public partial class AgencyPlatformDbContext : DbContext
             entity.Property(e => e.email).HasMaxLength(255);
             entity.Property(e => e.ip_address).HasMaxLength(50);
             entity.Property(e => e.created_at).HasDefaultValueSql("CURRENT_TIMESTAMP");
+        });
+
+        modelBuilder.Entity<pago_verificacion>(entity =>
+        {
+            entity.ToTable("pagos_verificacion", "plataforma");
+
+            entity.HasKey(e => e.id);
+
+            entity.Property(e => e.id)
+                .HasColumnName("id")
+                .UseIdentityAlwaysColumn();
+
+            entity.Property(e => e.verificacion_id)
+                .HasColumnName("verificacion_id")
+                .IsRequired();
+
+            entity.Property(e => e.acompanante_id)
+                .HasColumnName("acompanante_id")
+                .IsRequired();
+
+            entity.Property(e => e.agencia_id)
+                .HasColumnName("agencia_id")
+                .IsRequired();
+
+            entity.Property(e => e.monto)
+                .HasColumnName("monto")
+                .HasColumnType("decimal(10,2)")
+                .IsRequired();
+
+            entity.Property(e => e.moneda)
+                .HasColumnName("moneda")
+                .HasMaxLength(10)
+                .HasDefaultValue("USD");
+
+            entity.Property(e => e.metodo_pago)
+                .HasColumnName("metodo_pago")
+                .HasMaxLength(50);
+
+            entity.Property(e => e.referencia_pago)
+                .HasColumnName("referencia_pago")
+                .HasMaxLength(255);
+
+            entity.Property(e => e.estado)
+                .HasColumnName("estado")
+                .HasMaxLength(50)
+                .HasDefaultValue("pendiente");
+
+            entity.Property(e => e.fecha_pago)
+                .HasColumnName("fecha_pago");
+
+            entity.Property(e => e.created_at)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.Property(e => e.updated_at)
+                .HasColumnName("updated_at")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.HasOne(d => d.verificacion)
+                .WithMany()
+                .HasForeignKey(d => d.verificacion_id)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(d => d.acompanante)
+                .WithMany()
+                .HasForeignKey(d => d.acompanante_id);
+
+            entity.HasOne(d => d.agencia)
+                .WithMany()
+                .HasForeignKey(d => d.agencia_id);
         });
         modelBuilder.Entity<solicitud_agencia>(entity =>
         {
@@ -147,6 +224,56 @@ public partial class AgencyPlatformDbContext : DbContext
             // Índice único para evitar solicitudes duplicadas
             entity.HasIndex(e => new { e.acompanante_id, e.agencia_id, e.estado })
                 .IsUnique();
+        });
+
+        modelBuilder.Entity<movimientos_puntos_agencia>(entity =>
+        {
+            entity.ToTable("movimientos_puntos_agencia", "plataforma");
+
+            entity.HasKey(e => e.id);
+
+            entity.Property(e => e.id)
+                .HasColumnName("id")
+                .UseIdentityAlwaysColumn();
+
+            entity.Property(e => e.agencia_id)
+                .HasColumnName("agencia_id")
+                .IsRequired();
+
+            entity.Property(e => e.cantidad)
+                .HasColumnName("cantidad")
+                .IsRequired();
+
+            entity.Property(e => e.tipo)
+                .HasColumnName("tipo")
+                .HasMaxLength(50)
+                .IsRequired();
+
+            entity.Property(e => e.concepto)
+                .HasColumnName("concepto")
+                .HasMaxLength(255)
+                .IsRequired();
+
+            entity.Property(e => e.saldo_anterior)
+                .HasColumnName("saldo_anterior")
+                .IsRequired();
+
+            entity.Property(e => e.saldo_nuevo)
+                .HasColumnName("saldo_nuevo")
+                .IsRequired();
+
+            entity.Property(e => e.fecha)
+                .HasColumnName("fecha")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.Property(e => e.created_at)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.HasOne(d => d.agencia)
+                .WithMany()
+                .HasForeignKey(d => d.agencia_id)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
 
@@ -278,12 +405,90 @@ public partial class AgencyPlatformDbContext : DbContext
             entity.Property(e => e.sitio_web).HasMaxLength(255);
             entity.Property(e => e.updated_at).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.puntosAgencia).HasColumnName("puntos_acumulados");
+            entity.Property(a => a.email).HasMaxLength(255);
+            entity.Property(a => a.puntos_gastados).HasColumnName("puntos_gastados").HasDefaultValue(0);
+            entity.Property(a => a.puntos_acumulados).HasColumnName("puntos_acumulados").HasDefaultValue(0);
 
             entity.HasOne(d => d.usuario).WithOne(p => p.agencia)
                 .HasForeignKey<agencia>(d => d.usuario_id)
                 .HasConstraintName("agencias_usuario_id_fkey");
      
         });
+        modelBuilder.Entity<solicitud_registro_agencia>(entity =>
+        {
+            entity.ToTable("solicitudes_registro_agencia", "plataforma");
+
+            entity.HasKey(e => e.id);
+
+            entity.Property(e => e.id)
+                .HasColumnName("id")
+                .UseIdentityAlwaysColumn();
+
+            entity.Property(e => e.nombre)
+                .IsRequired()
+                .HasColumnName("nombre")
+                .HasMaxLength(255);
+
+            entity.Property(e => e.email)
+                .IsRequired()
+                .HasColumnName("email")
+                .HasMaxLength(255);
+
+            entity.HasIndex(e => e.email)
+                .IsUnique();
+
+            entity.Property(e => e.password_hash)
+                .IsRequired()
+                .HasColumnName("password_hash")
+                .HasMaxLength(255);
+
+            entity.Property(e => e.descripcion)
+                .HasColumnName("descripcion");
+
+            entity.Property(e => e.logo_url)
+                .HasColumnName("logo_url")
+                .HasMaxLength(512);
+
+            entity.Property(e => e.sitio_web)
+                .HasColumnName("sitio_web")
+                .HasMaxLength(255);
+
+            entity.Property(e => e.direccion)
+                .HasColumnName("direccion");
+
+            entity.Property(e => e.ciudad)
+                .HasColumnName("ciudad")
+                .HasMaxLength(100);
+
+            entity.Property(e => e.pais)
+                .HasColumnName("pais")
+                .HasMaxLength(100);
+
+            entity.Property(e => e.fecha_solicitud)
+                .HasColumnName("fecha_solicitud")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.Property(e => e.fecha_respuesta)
+                .HasColumnName("fecha_respuesta");
+
+            entity.Property(e => e.estado)
+                .HasColumnName("estado")
+                .HasMaxLength(50)
+                .HasDefaultValue("pendiente");
+
+            entity.Property(e => e.motivo_rechazo)
+               .HasColumnName("motivo_rechazo")
+                .IsRequired(false); 
+
+            entity.Property(e => e.created_at)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.Property(e => e.updated_at)
+                .HasColumnName("updated_at")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+        });
+
 
         modelBuilder.Entity<Comision>(entity =>
         {

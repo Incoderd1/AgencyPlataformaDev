@@ -1,5 +1,6 @@
 ﻿using AgencyPlatform.Application.Interfaces.Repositories;
 using AgencyPlatform.Core.Entities;
+using AgencyPlatform.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -52,7 +53,7 @@ namespace AgencyPlatform.Infrastructure.Repositories
                 .FirstOrDefaultAsync(f => f.acompanante_id == acompananteId && f.es_principal != true);
         }
 
-        public async Task DesmarcarFotosPrincipalesAsync(int acompananteId)
+        public async Task QuitarFotosPrincipalesAsync(int acompananteId)
         {
             var fotos = await _context.fotos
                 .Where(f => f.acompanante_id == acompananteId && f.es_principal == true)
@@ -86,11 +87,6 @@ namespace AgencyPlatform.Infrastructure.Repositories
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
-        }
-
-        public Task QuitarFotosPrincipalesAsync(int acompananteId)
-        {
-            throw new NotImplementedException();
         }
     }
 }

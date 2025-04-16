@@ -115,5 +115,12 @@ namespace AgencyPlatform.Infrastructure.Repositories
             // Este método es básicamente igual a DeleteByAgenciaIdAsync
             await DeleteByAgenciaIdAsync(agenciaId);
         }
+        public async Task<List<verificacione>> GetHistorialVerificacionesAsync(int acompananteId)
+        {
+            return await _context.verificaciones
+                .Where(v => v.acompanante_id == acompananteId)
+                .OrderByDescending(v => v.fecha_verificacion)
+                .ToListAsync();
+        }
     }
 }

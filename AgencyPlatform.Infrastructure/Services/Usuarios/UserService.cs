@@ -19,6 +19,8 @@ using Microsoft.Extensions.Logging;
 using AgencyPlatform.Application.Interfaces.Services.Acompanantes;
 using AgencyPlatform.Infrastructure.Services.Acompanantes;
 using AgencyPlatform.Application.DTOs.Acompanantes;
+using AgencyPlatform.Application.DTOs.Agencias;
+using AgencyPlatform.Infrastructure.Repositories;
 
 namespace AgencyPlatform.Application.Services
 {
@@ -31,7 +33,7 @@ namespace AgencyPlatform.Application.Services
         private readonly ILogger<UserService> _logger;
         private readonly IIntentoLoginRepository _intentoLoginRepository;
         private readonly IAcompananteService _acompananteService;
-
+        private readonly IAgenciaRepository _agenciaRepository;
 
 
         // Lista de contraseñas comunes para prevenir su uso
@@ -46,7 +48,7 @@ namespace AgencyPlatform.Application.Services
             IEmailSender emailSender,
             IHttpContextAccessor httpContextAccessor,
             ILogger<UserService> logger,
-            IIntentoLoginRepository intentoLoginRepository,IAcompananteService acompananteService)
+            IIntentoLoginRepository intentoLoginRepository,IAcompananteService acompananteService, IAgenciaRepository agenciaRepository)
         {
             _userRepository = userRepository;
             _configuration = configuration;
@@ -55,108 +57,8 @@ namespace AgencyPlatform.Application.Services
             _logger = logger;
             _intentoLoginRepository = intentoLoginRepository;
             _acompananteService = acompananteService;
+            _agenciaRepository = agenciaRepository;
         }
-
-        //public async Task<usuario> RegisterUserAsync(string email, string password, string tipoUsuario, string? phone = null)
-        //{
-        //    try
-        //    {
-        //        _logger.LogInformation("Iniciando registro de usuario con email: {Email}, tipo: {TipoUsuario}", email, tipoUsuario);
-
-        //        // Validación de parámetros
-        //        if (string.IsNullOrWhiteSpace(email))
-        //            throw new ArgumentException("El email es obligatorio.");
-        //        if (string.IsNullOrWhiteSpace(password))
-        //            throw new ArgumentException("La contraseña es obligatoria.");
-        //        if (string.IsNullOrWhiteSpace(tipoUsuario))
-        //            throw new ArgumentException("El tipo de usuario es obligatorio.");
-
-        //        // Validar formato de email
-        //        if (!IsValidEmail(email))
-        //            throw new ArgumentException("El formato del email no es válido.");
-
-        //        // Validar que el dominio del email sea válido
-        //        if (!IsValidEmailDomain(email))
-        //            throw new ArgumentException("El dominio del email no es válido.");
-
-        //        // Validar complejidad de contraseña
-        //        if (!IsPasswordStrong(password))
-        //            throw new ArgumentException("La contraseña debe tener al menos 8 caracteres, incluyendo una letra mayúscula, una minúscula, un número y un carácter especial.");
-
-        //        // Verificar si es una contraseña común
-        //        if (IsCommonPassword(password))
-        //            throw new ArgumentException("La contraseña es demasiado común. Por favor, elija una contraseña más segura.");
-
-        //        tipoUsuario = tipoUsuario.Trim().ToLower();
-
-        //        // Verificar si el usuario actual es administrador
-        //        bool isCurrentUserAdmin = false;
-        //        try
-        //        {
-        //            var currentUser = _httpContextAccessor.HttpContext?.User;
-        //            isCurrentUserAdmin = currentUser?.Identity?.IsAuthenticated == true && currentUser.IsInRole("admin");
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            _logger.LogWarning(ex, "Error al verificar rol de administrador durante registro");
-        //            isCurrentUserAdmin = false;
-        //        }
-
-        //        // Solo permitir ciertas combinaciones
-        //        if (tipoUsuario == "admin" && !isCurrentUserAdmin)
-        //        {
-        //            _logger.LogWarning("Intento no autorizado de crear un usuario administrador desde IP: {IP}",
-        //                _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress);
-        //            throw new UnauthorizedAccessException("No tienes permisos para crear usuarios administradores.");
-        //        }
-        //        // Si no está autenticado o no es admin, solo puede registrar clientes o agencias
-        //        if (!isCurrentUserAdmin && tipoUsuario != "cliente" && tipoUsuario != "agencia")
-        //        {
-        //            throw new ArgumentException("Solo puedes registrarte como 'cliente' o 'agencia'.");
-        //        }
-
-        //        // Verificar si el usuario ya existe
-        //        var existingUser = await _userRepository.GetByEmailAsync(email);
-        //        if (existingUser != null)
-        //            throw new Exception("El correo ya está registrado.");
-
-        //        // Obtener el ID del rol
-        //        var roleId = await _userRepository.GetRoleIdByNameAsync(tipoUsuario);
-        //        if (roleId == 0)
-        //            throw new Exception("No se encontró el rol en la base de datos.");
-
-        //        // Crear el nuevo usuario
-        //        var user = new usuario
-        //        {
-        //            email = email,
-        //            password_hash = BCrypt.Net.BCrypt.HashPassword(password),
-        //            rol_id = roleId,
-        //            telefono = phone,
-        //            esta_activo = true,
-        //            provider = "local",
-        //            password_required = true,
-        //            fecha_registro = DateTime.UtcNow,
-        //            created_at = DateTime.UtcNow
-        //        };
-
-        //        await _userRepository.AddAsync(user);
-        //        await _userRepository.SaveChangesAsync();
-
-        //        // Enviar correo de bienvenida
-        //        await EnviarCorreoBienvenida(user, tipoUsuario);
-
-        //        _logger.LogInformation("Usuario registrado exitosamente con ID: {UserId}, email: {Email}, tipo: {TipoUsuario}",
-        //            user.id, email, tipoUsuario);
-
-        //        return user;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "Error en registro de usuario con email: {Email}, tipo: {TipoUsuario}",
-        //            email, tipoUsuario);
-        //        throw;
-        //    }
-        //}
         public async Task<usuario> RegisterUserAsync(string email, string password, string tipoUsuario, string? phone = null)
         {
             try
@@ -683,71 +585,85 @@ namespace AgencyPlatform.Application.Services
             }
         }
         public async Task<(usuario Usuario, int AcompananteId)> RegisterUserAcompananteAsync(
-                string email,
-                string password,
-                string? phone,
-                string nombrePerfil,
-                string genero,
-                int edad,
-                string? descripcion = null,
-                int? altura = null,
-                int? peso = null,
-                string? ciudad = null,
-                string? pais = null,
-                string? idiomas = null,
-                string? disponibilidad = null,
-                decimal? tarifaBase = null,
-                string? moneda = "USD",
-                List<int>? categoriaIds = null,
-                string? telefono = null,
-                string? whatsapp = null,
-                string? emailContacto = null)
+                 string email,
+                 string password,
+                 string telefono, // Ya es igual a WhatsApp
+                 string nombrePerfil,
+                 string genero,
+                 int edad,
+                 string? descripcion = null,
+                 string? ciudad = null,
+                 string? pais = null,
+                 string? disponibilidad = "Horario flexible",
+                 decimal? tarifaBase = null,
+                 string? moneda = "USD", // Forzado a "USD"
+                 List<int>? categoriaIds = null,
+                 string? whatsapp = null, // Ya no es necesario, lo usamos como teléfono
+                 string? emailContacto = null,
+                 int altura = 160, // Default
+                 int peso = 60, // Default
+                 string idiomas = "Español" // Default
+                            )
         {
             try
             {
-                _logger.LogInformation("Iniciando registro combinado de usuario-acompañante con email: {Email}", email);
+                _logger.LogInformation("Iniciando registro de usuario-acompañante con email: {Email}", email);
 
-                // 1. Registrar el usuario con rol de acompañante
-                var user = await RegisterUserAsync(email, password, "acompanante", phone);
+                // 1. Crear el usuario con rol "acompanante"
+                var user = await RegisterUserAsync(email, password, "acompanante", telefono);
 
-                // 2. Crear el DTO para el acompañante
+                // 2. Construir el DTO de acompañante
                 var acompananteDto = new CrearAcompananteDto
                 {
                     NombrePerfil = nombrePerfil,
                     Genero = genero,
                     Edad = edad,
                     Descripcion = descripcion,
-                    Altura = altura,
-                    Peso = peso,
                     Ciudad = ciudad,
                     Pais = pais,
-                    Idiomas = idiomas,
-                    Disponibilidad = disponibilidad,
-                    TarifaBase = tarifaBase,
-                    Moneda = moneda,
-                    CategoriaIds = categoriaIds ?? new List<int>(),
+                    Disponibilidad = disponibilidad ?? "Horario flexible", // Default
+                    TarifaBase = tarifaBase ?? 0,
+                    Moneda = "USD", // Forzado a USD
+                    CategoriaIds = categoriaIds ?? new List<int>(), // Si no se pasa, asigna lista vacía
                     Telefono = telefono,
-                    WhatsApp = whatsapp
+                    WhatsApp = telefono, // Usamos teléfono como WhatsApp también
+                    EmailContacto = emailContacto ?? email, // Si no se pasa, usa el email
+                    Altura = altura,
+                    Peso = peso,
+                    Idiomas = idiomas
                 };
 
-                // Asignar email de contacto igual al del usuario si no se especifica
-                acompananteDto.EmailContacto = emailContacto ?? email;
-                
-
-                // 3. Crear el perfil de acompañante usando el servicio existente
+                // 3. Crear el perfil del acompañante
                 int acompananteId = await _acompananteService.CrearAsync(acompananteDto, user.id);
 
-                _logger.LogInformation("Usuario-acompañante registrado exitosamente. Usuario ID: {UserId}, Acompañante ID: {AcompananteId}",
+                _logger.LogInformation("✅ Registro exitoso. Usuario ID: {UserId}, Acompañante ID: {AcompananteId}",
                     user.id, acompananteId);
 
                 return (user, acompananteId);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error en registro combinado usuario-acompañante con email: {Email}", email);
+                _logger.LogError(ex, "❌ Error en registro acompañante con email: {Email}", email);
                 throw;
             }
         }
+
+        //venir aqui
+
+        public async Task NotificarAdminDeSolicitudAgenciaAsync()
+        {
+            // Lógica para enviar notificación al administrador (por ejemplo, por correo)
+            var admins = await _userRepository.GetUsersByRoleAsync("admin"); // Supongamos que tenemos un repositorio para obtener usuarios por rol
+
+            foreach (var admin in admins)
+            {
+                await _emailSender.SendEmailAsync(admin.email, "Nueva solicitud de agencia", "Hay una nueva solicitud pendiente de agencia.");
+            }
+        }
+
+
+
+
 
         #region Métodos Privados
 
